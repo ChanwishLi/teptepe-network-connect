@@ -20,15 +20,16 @@ function useStats() {
   return useQuery({
     queryKey: ["landing-stats"],
     queryFn: async () => {
-      const [alumni, students, generations, countries, companies] = await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }).lte("generation", 27),
-        supabase.from("profiles").select("id", { count: "exact", head: true }).gte("generation", 28),
-        supabase.from("profiles").select("generation").not("generation", "is", null),
-        supabase.from("profiles").select("country").not("country", "is", null),
-        supabase.from("employment_records").select("company").eq("is_current", true),
+      const pub = supabase.from("profiles_public" as any);
+      const [alumni, students, generations, countries] = await Promise.all([
+        pub.select("id", { count: "exact", head: true }).lte("generation", 27),
+        pub.select("id", { count: "exact", head: true }).gte("generation", 28),
+        pub.select("generation").not("generation", "is", null),
+        pub.select("country").not("country", "is", null),
       ]);
-      const genSet = new Set((generations.data ?? []).map((r) => r.generation));
-      const countrySet = new Set((countries.data ?? []).map((r) => r.country?.trim().toLowerCase()).filter(Boolean));
+      const companies = { data: [] as Array<{ company: string | null }> };
+      const genSet = new Set(((generations.data ?? []) as unknown as Array<{ generation: number | null }>).map((r) => r.generation));
+      const countrySet = new Set(((countries.data ?? []) as unknown as Array<{ country: string | null }>).map((r) => r.country?.trim().toLowerCase()).filter(Boolean));
       const companySet = new Set((companies.data ?? []).map((r) => r.company?.trim().toLowerCase()).filter(Boolean));
       return {
         alumni: alumni.count ?? 0,
@@ -46,10 +47,10 @@ function useFeatured() {
     queryKey: ["landing-featured"],
     queryFn: async () => {
       const { data } = await supabase
-        .from("profiles")
+        .from("profiles_public" as any)
         .select("id, first_name, last_name, generation, program_type, avatar_url, city, country")
-        .eq("is_featured", true).eq("is_approved", true).limit(6);
-      return data ?? [];
+        .eq("is_featured", true).limit(6);
+      return (data ?? []) as unknown as Array<{ id: string; first_name: string; last_name: string; generation: number | null; program_type: string | null; avatar_url: string | null; city: string | null; country: string | null }>;
     },
   });
 }

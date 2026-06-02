@@ -20,12 +20,11 @@ function InternshipsPage() {
     queryKey: ["internships", "approved"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("internship_posts")
+        .from("internship_posts_public" as any)
         .select("*")
-        .eq("status", "approved")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as unknown as Array<{ id: string; position: string; company_name: string; employment_type: string; description: string; location: string | null }>;
     },
   });
 

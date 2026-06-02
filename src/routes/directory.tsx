@@ -29,9 +29,8 @@ function DirectoryPage() {
     queryKey: ["directory", { q, generation, program, major, country, mentor }],
     queryFn: async () => {
       let query = supabase
-        .from("profiles")
-        .select("id, first_name, last_name, generation, program_type, major, country, city, avatar_url, skills, mentorship_settings(available_as_mentor)")
-        .eq("is_approved", true)
+        .from("profiles_public" as any)
+        .select("id, first_name, last_name, generation, program_type, major, country, city, avatar_url, skills, available_as_mentor")
         .order("generation", { ascending: false })
         .limit(60);
       if (generation !== "all") query = query.eq("generation", parseInt(generation));
@@ -44,8 +43,8 @@ function DirectoryPage() {
       }
       const { data, error } = await query;
       if (error) throw error;
-      let rows = data ?? [];
-      if (mentor === "yes") rows = rows.filter((r: any) => r.mentorship_settings?.available_as_mentor);
+      let rows = (data ?? []) as any[];
+      if (mentor === "yes") rows = rows.filter((r) => r.available_as_mentor);
       return rows;
     },
   });
