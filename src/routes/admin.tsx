@@ -177,7 +177,7 @@ function CrudSection<T extends { id: string }>({
     queryFn: async () => {
       const { data, error } = await supabase.from(table as any).select("*").order(orderBy, { ascending: false }).limit(200);
       if (error) throw error;
-      return (data ?? []) as T[];
+      return (data ?? []) as unknown as T[];
     },
   });
 
