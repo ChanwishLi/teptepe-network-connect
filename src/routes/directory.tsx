@@ -35,8 +35,8 @@ function DirectoryPage() {
         .order("generation", { ascending: false })
         .limit(60);
       if (generation !== "all") query = query.eq("generation", parseInt(generation));
-      if (program !== "all") query = query.eq("program_type", program);
-      if (major !== "all") query = query.eq("major", major);
+      if (program !== "all") query = query.eq("program_type", program as any);
+      if (major !== "all") query = query.eq("major", major as any);
       if (country) query = query.ilike("country", `%${country}%`);
       if (q) {
         const like = `%${q}%`;
