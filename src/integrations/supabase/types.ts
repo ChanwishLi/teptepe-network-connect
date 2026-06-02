@@ -544,6 +544,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "success_stories_featured_alumni_id_fkey"
+            columns: ["featured_alumni_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_roles: {
@@ -569,7 +576,78 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      internship_posts_public: {
+        Row: {
+          application_link: string | null
+          company_name: string | null
+          created_at: string | null
+          deadline: string | null
+          description: string | null
+          employment_type: Database["public"]["Enums"]["employment_type"] | null
+          id: string | null
+          location: string | null
+          position: string | null
+          status: Database["public"]["Enums"]["post_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          application_link?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          deadline?: string | null
+          description?: string | null
+          employment_type?:
+            | Database["public"]["Enums"]["employment_type"]
+            | null
+          id?: string | null
+          location?: string | null
+          position?: string | null
+          status?: Database["public"]["Enums"]["post_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          application_link?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          deadline?: string | null
+          description?: string | null
+          employment_type?:
+            | Database["public"]["Enums"]["employment_type"]
+            | null
+          id?: string | null
+          location?: string | null
+          position?: string | null
+          status?: Database["public"]["Enums"]["post_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles_public: {
+        Row: {
+          admission_year: number | null
+          available_as_mentor: boolean | null
+          avatar_url: string | null
+          certifications: string[] | null
+          city: string | null
+          country: string | null
+          created_at: string | null
+          expertise: string[] | null
+          first_name: string | null
+          generation: number | null
+          graduation_year: number | null
+          id: string | null
+          is_featured: boolean | null
+          last_name: string | null
+          major: Database["public"]["Enums"]["major_type"] | null
+          partner_university: string | null
+          preferred_name: string | null
+          professional_summary: string | null
+          program_type: Database["public"]["Enums"]["program_type"] | null
+          research_interests: string[] | null
+          skills: string[] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       current_generation_status: {
