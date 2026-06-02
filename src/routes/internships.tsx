@@ -50,14 +50,14 @@ function InternshipsPage() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {data.map((p: any) => (
+            {data.map((p) => (
               <Card key={p.id} className="p-5">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h3 className="font-display text-xl font-semibold">{p.title}</h3>
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">{p.type}</div>
+                  <h3 className="font-display text-xl font-semibold">{p.position}</h3>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">{p.employment_type}</div>
                 </div>
                 <div className="mt-1 text-sm text-muted-foreground">
-                  {[p.company, p.location].filter(Boolean).join(" · ")}
+                  {[p.company_name, p.location].filter(Boolean).join(" · ")}
                 </div>
                 {p.description && <p className="mt-3 text-sm text-muted-foreground line-clamp-3">{p.description}</p>}
               </Card>

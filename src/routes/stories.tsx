@@ -22,7 +22,7 @@ function StoriesPage() {
       const { data, error } = await supabase
         .from("success_stories")
         .select("*")
-        .eq("status", "published")
+        .eq("is_published", true)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -47,12 +47,16 @@ function StoriesPage() {
           </Card>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {data.map((s: any) => (
+            {data.map((s) => (
               <Card key={s.id} className="overflow-hidden">
                 {s.image_url && <img src={s.image_url} alt={s.title} className="aspect-[4/3] w-full object-cover" />}
                 <div className="p-5">
                   <h3 className="font-display text-xl font-semibold">{s.title}</h3>
-                  {s.subtitle && <div className="mt-1 text-sm text-muted-foreground">{s.subtitle}</div>}
+                  {s.alumni_name && (
+                    <div className="mt-1 text-sm text-muted-foreground">
+                      {s.alumni_name}{s.company ? ` · ${s.company}` : ""}
+                    </div>
+                  )}
                 </div>
               </Card>
             ))}

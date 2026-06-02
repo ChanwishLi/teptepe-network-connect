@@ -22,7 +22,7 @@ function NewsPage() {
       const { data, error } = await supabase
         .from("news_posts")
         .select("*")
-        .eq("status", "published")
+        .eq("is_published", true)
         .order("published_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -47,13 +47,13 @@ function NewsPage() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {data.map((n: any) => (
+            {data.map((n) => (
               <Card key={n.id} className="p-6">
                 <div className="text-xs uppercase tracking-wider text-muted-foreground">
                   {n.published_at && new Date(n.published_at).toLocaleDateString(undefined, { dateStyle: "medium" })}
                 </div>
                 <h3 className="mt-2 font-display text-2xl font-semibold">{n.title}</h3>
-                {n.excerpt && <p className="mt-2 text-sm text-muted-foreground">{n.excerpt}</p>}
+                {n.summary && <p className="mt-2 text-sm text-muted-foreground">{n.summary}</p>}
               </Card>
             ))}
           </div>

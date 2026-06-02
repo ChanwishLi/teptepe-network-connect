@@ -22,8 +22,9 @@ function EventsPage() {
       const { data, error } = await supabase
         .from("events")
         .select("*")
-        .eq("status", "published")
-        .order("start_at", { ascending: true });
+        .eq("is_published", true)
+        .eq("is_archived", false)
+        .order("event_date", { ascending: true });
       if (error) throw error;
       return data ?? [];
     },
@@ -50,12 +51,13 @@ function EventsPage() {
           </Card>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {data.map((e: any) => (
+            {data.map((e) => (
               <Card key={e.id} className="p-5">
                 <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                  {new Date(e.start_at).toLocaleDateString(undefined, { dateStyle: "medium" })}
+                  {new Date(e.event_date).toLocaleDateString(undefined, { dateStyle: "medium" })}
+                  {e.event_time && ` · ${e.event_time}`}
                 </div>
-                <h3 className="mt-2 font-display text-xl font-semibold">{e.title}</h3>
+                <h3 className="mt-2 font-display text-xl font-semibold">{e.name}</h3>
                 {e.location && <div className="mt-1 text-sm text-muted-foreground">{e.location}</div>}
                 {e.description && <p className="mt-3 text-sm text-muted-foreground line-clamp-3">{e.description}</p>}
               </Card>
