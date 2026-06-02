@@ -28,8 +28,8 @@ function useStats() {
         pub.select("country").not("country", "is", null),
       ]);
       const companies = { data: [] as Array<{ company: string | null }> };
-      const genSet = new Set(((generations.data ?? []) as Array<{ generation: number | null }>).map((r) => r.generation));
-      const countrySet = new Set(((countries.data ?? []) as Array<{ country: string | null }>).map((r) => r.country?.trim().toLowerCase()).filter(Boolean));
+      const genSet = new Set(((generations.data ?? []) as unknown as Array<{ generation: number | null }>).map((r) => r.generation));
+      const countrySet = new Set(((countries.data ?? []) as unknown as Array<{ country: string | null }>).map((r) => r.country?.trim().toLowerCase()).filter(Boolean));
       const companySet = new Set((companies.data ?? []).map((r) => r.company?.trim().toLowerCase()).filter(Boolean));
       return {
         alumni: alumni.count ?? 0,
@@ -50,7 +50,7 @@ function useFeatured() {
         .from("profiles_public" as any)
         .select("id, first_name, last_name, generation, program_type, avatar_url, city, country")
         .eq("is_featured", true).limit(6);
-      return (data ?? []) as Array<{ id: string; first_name: string; last_name: string; generation: number | null; program_type: string | null; avatar_url: string | null; city: string | null; country: string | null }>;
+      return (data ?? []) as unknown as Array<{ id: string; first_name: string; last_name: string; generation: number | null; program_type: string | null; avatar_url: string | null; city: string | null; country: string | null }>;
     },
   });
 }

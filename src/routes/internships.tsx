@@ -24,7 +24,7 @@ function InternshipsPage() {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as Array<{ id: string; position: string; company_name: string; employment_type: string; description: string; location: string | null }>;
+      return (data ?? []) as unknown as Array<{ id: string; position: string; company_name: string; employment_type: string; description: string; location: string | null }>;
     },
   });
 
