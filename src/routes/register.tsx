@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { PageShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,7 @@ type FormState = {
   first_name: string; last_name: string; preferred_name: string; gender: string; date_of_birth: string; nationality: string;
   email: string; password: string; phone: string; address: string; city: string; province: string; country: string;
   facebook_url: string; instagram_url: string; linkedin_url: string; personal_website: string;
-  student_id: string; program_type: ProgramType | ""; major: string; admission_year: string; graduation_year: string; generation: string; partner_university: string;
+  student_id: string; program_type: ProgramType | ""; major: string; admission_year: string; graduation_year: string; generation: string; partner_university: string; honors: string;
   c_data: boolean; c_directory: boolean; c_comms: boolean; c_mentor: boolean;
 };
 
@@ -26,7 +27,7 @@ const initial: FormState = {
   first_name: "", last_name: "", preferred_name: "", gender: "", date_of_birth: "", nationality: "",
   email: "", password: "", phone: "", address: "", city: "", province: "", country: "",
   facebook_url: "", instagram_url: "", linkedin_url: "", personal_website: "",
-  student_id: "", program_type: "", major: "", admission_year: "", graduation_year: "", generation: "", partner_university: "",
+  student_id: "", program_type: "", major: "", admission_year: "", graduation_year: "", generation: "", partner_university: "", honors: "",
   c_data: false, c_directory: false, c_comms: false, c_mentor: false,
 };
 
