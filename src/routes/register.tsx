@@ -191,11 +191,19 @@ function RegisterPage() {
                 )}
                 <Grid2><Field label="Admission year *"><Input type="number" min={1995} max={2030} value={f.admission_year} onChange={(e) => set("admission_year", e.target.value)} required /></Field>
                 <Field label="Graduation year *"><Input type="number" min={1999} max={2035} value={f.graduation_year} onChange={(e) => set("graduation_year", e.target.value)} required /></Field></Grid2>
-                <div className="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground">
-                  Mandatory education records will be created automatically based on your program:
-                  {f.program_type === "TEPE" && " 1 Bachelor's at Thammasat University."}
-                  {f.program_type === "TEP" && ` Bachelor's at Thammasat University and Bachelor's at ${f.partner_university || "your partner university"}.`}
-                  {f.program_type === "TEPE+" && ` Bachelor's at Thammasat University and Master's at ${f.partner_university || "your partner university"}.`}
+                <Field label="Honors (e.g. First Class, Second Class Upper)"><Input value={f.honors} onChange={(e) => set("honors", e.target.value)} /></Field>
+                <div className="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
+                  <div className="font-medium text-foreground">Education History — Part 1 (auto-generated)</div>
+                  {f.program_type === "TEPE" && <div>• Bachelor's Degree — Thammasat University ({f.major || "major"}{f.graduation_year ? `, ${f.graduation_year}` : ""}{f.honors ? `, ${f.honors}` : ""})</div>}
+                  {f.program_type === "TEP" && (<>
+                    <div>• Bachelor's Degree — Thammasat University ({f.major || "major"}{f.graduation_year ? `, ${f.graduation_year}` : ""}{f.honors ? `, ${f.honors}` : ""})</div>
+                    <div>• Bachelor's Degree — {f.partner_university || "Partner University"}</div>
+                  </>)}
+                  {f.program_type === "TEPE+" && (<>
+                    <div>• Bachelor's Degree — Thammasat University ({f.major || "major"}{f.graduation_year ? `, ${f.graduation_year}` : ""}{f.honors ? `, ${f.honors}` : ""})</div>
+                    <div>• Master's Degree — {f.partner_university || "Partner University"}</div>
+                  </>)}
+                  <div className="pt-1">These records cannot be deleted. You can add high school, additional degrees, and certifications later from your profile.</div>
                 </div>
               </>
             )}
