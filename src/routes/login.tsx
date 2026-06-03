@@ -51,6 +51,21 @@ function LoginPage() {
             </div>
             <Button type="submit" className="w-full" disabled={loading}>{loading ? "Signing in…" : "Sign in"}</Button>
           </form>
+          <div className="relative my-4 text-center text-xs text-muted-foreground">
+            <span className="relative z-10 bg-card px-2">or</span>
+            <span className="absolute left-0 right-0 top-1/2 -z-0 border-t" />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={async () => {
+              const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}${redirect ?? "/directory"}` });
+              if (r.error) toast.error(r.error.message || "Google sign-in failed");
+            }}
+          >
+            Continue with Google
+          </Button>
           <div className="mt-4 flex justify-between text-xs text-muted-foreground">
             <Link to="/reset-password" className="hover:underline">Forgot password?</Link>
             <Link to="/register" className="hover:underline">Create account</Link>
