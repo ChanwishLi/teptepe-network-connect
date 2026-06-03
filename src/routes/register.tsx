@@ -91,6 +91,11 @@ function RegisterPage() {
     navigate({ to: "/profile" });
   };
 
+  const googleSignIn = async () => {
+    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/profile` });
+    if (res.error) toast.error(res.error.message || "Google sign-in failed");
+  };
+
   return (
     <PageShell>
       <div className="mx-auto max-w-2xl px-4 py-12">
@@ -103,7 +108,18 @@ function RegisterPage() {
             <Progress value={(step / 4) * 100} className="mt-3" />
           </div>
 
+          {step === 1 && (
+            <div className="mb-6 space-y-2">
+              <Button type="button" variant="outline" className="w-full" onClick={googleSignIn}>Continue with Google</Button>
+              <div className="relative my-2 text-center text-xs text-muted-foreground">
+                <span className="relative z-10 bg-card px-2">or fill in the form below</span>
+                <span className="absolute left-0 right-0 top-1/2 -z-0 border-t" />
+              </div>
+            </div>
+          )}
+
           <form onSubmit={step === 4 ? submit : (e) => { e.preventDefault(); next(); }} className="space-y-4">
+
             {step === 1 && (
               <>
                 <h2 className="font-display text-lg font-semibold">Personal information</h2>
