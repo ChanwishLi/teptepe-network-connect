@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { PageShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,7 @@ type FormState = {
   first_name: string; last_name: string; preferred_name: string; gender: string; date_of_birth: string; nationality: string;
   email: string; password: string; phone: string; address: string; city: string; province: string; country: string;
   facebook_url: string; instagram_url: string; linkedin_url: string; personal_website: string;
-  student_id: string; program_type: ProgramType | ""; major: string; admission_year: string; graduation_year: string; generation: string; partner_university: string;
+  student_id: string; program_type: ProgramType | ""; major: string; admission_year: string; graduation_year: string; generation: string; partner_university: string; honors: string;
   c_data: boolean; c_directory: boolean; c_comms: boolean; c_mentor: boolean;
 };
 
@@ -26,7 +27,7 @@ const initial: FormState = {
   first_name: "", last_name: "", preferred_name: "", gender: "", date_of_birth: "", nationality: "",
   email: "", password: "", phone: "", address: "", city: "", province: "", country: "",
   facebook_url: "", instagram_url: "", linkedin_url: "", personal_website: "",
-  student_id: "", program_type: "", major: "", admission_year: "", graduation_year: "", generation: "", partner_university: "",
+  student_id: "", program_type: "", major: "", admission_year: "", graduation_year: "", generation: "", partner_university: "", honors: "",
   c_data: false, c_directory: false, c_comms: false, c_mentor: false,
 };
 
@@ -72,7 +73,7 @@ function RegisterPage() {
           facebook_url: f.facebook_url, instagram_url: f.instagram_url, linkedin_url: f.linkedin_url, personal_website: f.personal_website,
           student_id: f.student_id, program_type: f.program_type, major: f.major,
           admission_year: f.admission_year, graduation_year: f.graduation_year, generation: f.generation,
-          partner_university: f.partner_university,
+          partner_university: f.partner_university, honors: f.honors,
         },
       },
     });
@@ -90,6 +91,11 @@ function RegisterPage() {
     navigate({ to: "/profile" });
   };
 
+  const googleSignIn = async () => {
+    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/profile` });
+    if (res.error) toast.error(res.error.message || "Google sign-in failed");
+  };
+
   return (
     <PageShell>
       <div className="mx-auto max-w-2xl px-4 py-12">
@@ -102,7 +108,18 @@ function RegisterPage() {
             <Progress value={(step / 4) * 100} className="mt-3" />
           </div>
 
+          {step === 1 && (
+            <div className="mb-6 space-y-2">
+              <Button type="button" variant="outline" className="w-full" onClick={googleSignIn}>Continue with Google</Button>
+              <div className="relative my-2 text-center text-xs text-muted-foreground">
+                <span className="relative z-10 bg-card px-2">or fill in the form below</span>
+                <span className="absolute left-0 right-0 top-1/2 -z-0 border-t" />
+              </div>
+            </div>
+          )}
+
           <form onSubmit={step === 4 ? submit : (e) => { e.preventDefault(); next(); }} className="space-y-4">
+
             {step === 1 && (
               <>
                 <h2 className="font-display text-lg font-semibold">Personal information</h2>
@@ -174,11 +191,19 @@ function RegisterPage() {
                 )}
                 <Grid2><Field label="Admission year *"><Input type="number" min={1995} max={2030} value={f.admission_year} onChange={(e) => set("admission_year", e.target.value)} required /></Field>
                 <Field label="Graduation year *"><Input type="number" min={1999} max={2035} value={f.graduation_year} onChange={(e) => set("graduation_year", e.target.value)} required /></Field></Grid2>
-                <div className="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground">
-                  Mandatory education records will be created automatically based on your program:
-                  {f.program_type === "TEPE" && " 1 Bachelor's at Thammasat University."}
-                  {f.program_type === "TEP" && ` Bachelor's at Thammasat University and Bachelor's at ${f.partner_university || "your partner university"}.`}
-                  {f.program_type === "TEPE+" && ` Bachelor's at Thammasat University and Master's at ${f.partner_university || "your partner university"}.`}
+                <Field label="Honors (e.g. First Class, Second Class Upper)"><Input value={f.honors} onChange={(e) => set("honors", e.target.value)} /></Field>
+                <div className="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
+                  <div className="font-medium text-foreground">Education History — Part 1 (auto-generated)</div>
+                  {f.program_type === "TEPE" && <div>• Bachelor's Degree — Thammasat University ({f.major || "major"}{f.graduation_year ? `, ${f.graduation_year}` : ""}{f.honors ? `, ${f.honors}` : ""})</div>}
+                  {f.program_type === "TEP" && (<>
+                    <div>• Bachelor's Degree — Thammasat University ({f.major || "major"}{f.graduation_year ? `, ${f.graduation_year}` : ""}{f.honors ? `, ${f.honors}` : ""})</div>
+                    <div>• Bachelor's Degree — {f.partner_university || "Partner University"}</div>
+                  </>)}
+                  {f.program_type === "TEPE+" && (<>
+                    <div>• Bachelor's Degree — Thammasat University ({f.major || "major"}{f.graduation_year ? `, ${f.graduation_year}` : ""}{f.honors ? `, ${f.honors}` : ""})</div>
+                    <div>• Master's Degree — {f.partner_university || "Partner University"}</div>
+                  </>)}
+                  <div className="pt-1">These records cannot be deleted. You can add high school, additional degrees, and certifications later from your profile.</div>
                 </div>
               </>
             )}
