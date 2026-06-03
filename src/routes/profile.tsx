@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { generationStatus } from "@/lib/constants";
 
@@ -18,6 +22,15 @@ export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "My Profile — TEP-TEPE Alumni Network" }] }),
   component: ProfilePage,
 });
+
+const EDU_LEVELS = [
+  { value: "high_school", label: "High School" },
+  { value: "bachelor", label: "Bachelor's Degree" },
+  { value: "master", label: "Master's Degree" },
+  { value: "phd", label: "Doctoral Degree (PhD)" },
+  { value: "certification", label: "Professional Certification" },
+] as const;
+const LEVEL_LABEL: Record<string, string> = Object.fromEntries(EDU_LEVELS.map((l) => [l.value, l.label]));
 
 function ProfilePage() {
   const { user, loading } = useAuth();
@@ -47,11 +60,51 @@ function ProfilePage() {
     },
   });
 
+  const { data: education = [] } = useQuery({
+    enabled: !!user,
+    queryKey: ["education", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("education_records").select("*").eq("user_id", user!.id)
+        .order("is_mandatory", { ascending: false }).order("graduation_year", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const [form, setForm] = useState<any>({});
   const [ment, setMent] = useState<any>({});
+  const [avatarSignedUrl, setAvatarSignedUrl] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { if (profile) setForm(profile); }, [profile]);
   useEffect(() => { if (mentorship) setMent(mentorship); }, [mentorship]);
+
+  // Generate signed URL for avatar (bucket is private)
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      if (!profile?.avatar_url) { setAvatarSignedUrl(null); return; }
+      const { data } = await supabase.storage.from("avatars").createSignedUrl(profile.avatar_url, 60 * 60);
+      if (!cancelled) setAvatarSignedUrl(data?.signedUrl ?? null);
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [profile?.avatar_url]);
+
+  const uploadAvatar = useMutation({
+    mutationFn: async (file: File) => {
+      if (file.size > 5 * 1024 * 1024) throw new Error("Max file size is 5 MB.");
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${user!.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { error } = await supabase.from("profiles").update({ avatar_url: path }).eq("id", user!.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Profile picture updated"); qc.invalidateQueries({ queryKey: ["profile"] }); },
+    onError: (e: any) => toast.error(e.message),
+  });
 
   const saveProfile = useMutation({
     mutationFn: async () => {
@@ -90,16 +143,45 @@ function ProfilePage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const deleteEdu = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("education_records").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["education"] }); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   if (loading || !user || pLoading || !profile) {
     return <PageShell><div className="mx-auto max-w-3xl px-4 py-16 text-sm text-muted-foreground">Loading…</div></PageShell>;
   }
 
+  const initials = `${(profile.first_name?.[0] ?? "")}${(profile.last_name?.[0] ?? "")}`.toUpperCase() || "?";
+  const mandatory = (education as any[]).filter((e) => e.is_mandatory);
+  const additional = (education as any[]).filter((e) => !e.is_mandatory);
+
   return (
     <PageShell>
       <section className="mx-auto max-w-4xl px-4 py-12 lg:px-8">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="font-display text-4xl font-bold">My profile</h1>
+        <div className="flex flex-wrap items-start gap-6">
+          <div className="flex flex-col items-center gap-2">
+            <Avatar className="h-24 w-24">
+              {avatarSignedUrl ? <AvatarImage src={avatarSignedUrl} alt="" /> : null}
+              <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
+            </Avatar>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatar.mutate(f); e.target.value = ""; }}
+            />
+            <Button size="sm" variant="outline" onClick={() => fileRef.current?.click()} disabled={uploadAvatar.isPending}>
+              {uploadAvatar.isPending ? "Uploading…" : "Change photo"}
+            </Button>
+          </div>
+          <div className="flex-1 min-w-[16rem]">
+            <h1 className="font-display text-4xl font-bold">{profile.first_name} {profile.last_name}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {profile.program_type} #{profile.generation} · {generationStatus(profile.generation)} · {user.email}
             </p>
@@ -107,9 +189,10 @@ function ProfilePage() {
         </div>
 
         <Tabs defaultValue="info" className="mt-8">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="info">Personal</TabsTrigger>
             <TabsTrigger value="prof">Professional</TabsTrigger>
+            <TabsTrigger value="edu">Education</TabsTrigger>
             <TabsTrigger value="vis">Visibility</TabsTrigger>
             <TabsTrigger value="mentor">Mentor</TabsTrigger>
           </TabsList>
@@ -138,7 +221,6 @@ function ProfilePage() {
                 </div>
                 <Field label="Skills (comma separated)" value={csv(form.skills)} onChange={(v) => setForm({ ...form, skills: v })} />
                 <Field label="Expertise (comma separated)" value={csv(form.expertise)} onChange={(v) => setForm({ ...form, expertise: v })} />
-                <Field label="Certifications (comma separated)" value={csv(form.certifications)} onChange={(v) => setForm({ ...form, certifications: v })} />
                 <Field label="Research interests (comma separated)" value={csv(form.research_interests)} onChange={(v) => setForm({ ...form, research_interests: v })} />
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="LinkedIn URL" value={form.linkedin_url ?? ""} onChange={(v) => setForm({ ...form, linkedin_url: v })} />
@@ -148,6 +230,53 @@ function ProfilePage() {
                 </div>
               </div>
               <SaveBtn pending={saveProfile.isPending} onClick={() => saveProfile.mutate()} />
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="edu">
+            <Card className="p-6 space-y-6">
+              <div>
+                <h3 className="font-display text-lg font-semibold">Part 1 — TEP-TEPE Record</h3>
+                <p className="text-xs text-muted-foreground">Auto-generated from your program. These records cannot be deleted.</p>
+                <div className="mt-3 space-y-2">
+                  {mandatory.length === 0 && <div className="text-sm text-muted-foreground">No mandatory records yet.</div>}
+                  {mandatory.map((e) => (
+                    <div key={e.id} className="flex items-center justify-between rounded-md border bg-muted/30 p-3">
+                      <div className="text-sm">
+                        <div className="font-medium">{LEVEL_LABEL[e.level] ?? e.level} — {e.institution}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {[e.major, e.country, e.graduation_year, e.honors].filter(Boolean).join(" · ")}
+                        </div>
+                      </div>
+                      <Badge variant="secondary">Locked</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-display text-lg font-semibold">Part 2 — Additional Education</h3>
+                    <p className="text-xs text-muted-foreground">High school, additional degrees, and certifications.</p>
+                  </div>
+                  <AddEducationDialog userId={user.id} onSaved={() => qc.invalidateQueries({ queryKey: ["education"] })} />
+                </div>
+                <div className="mt-3 space-y-2">
+                  {additional.length === 0 && <div className="text-sm text-muted-foreground">Nothing here yet — click "Add entry" to get started.</div>}
+                  {additional.map((e) => (
+                    <div key={e.id} className="flex items-start justify-between gap-3 rounded-md border p-3">
+                      <div className="text-sm">
+                        <div className="font-medium">{LEVEL_LABEL[e.level] ?? e.level} — {e.institution}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {[e.major, e.country, e.graduation_year ?? e.year_awarded, e.organization, e.honors].filter(Boolean).join(" · ")}
+                        </div>
+                      </div>
+                      <Button size="sm" variant="ghost" onClick={() => deleteEdu.mutate(e.id)}>Remove</Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </Card>
           </TabsContent>
 
@@ -179,6 +308,103 @@ function ProfilePage() {
         </Tabs>
       </section>
     </PageShell>
+  );
+}
+
+function AddEducationDialog({ userId, onSaved }: { userId: string; onSaved: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [level, setLevel] = useState<string>("high_school");
+  const [institution, setInstitution] = useState("");
+  const [major, setMajor] = useState("");
+  const [country, setCountry] = useState("");
+  const [year, setYear] = useState("");
+  const [organization, setOrganization] = useState("");
+  const [honors, setHonors] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const reset = () => { setLevel("high_school"); setInstitution(""); setMajor(""); setCountry(""); setYear(""); setOrganization(""); setHonors(""); };
+
+  const submit = async () => {
+    if (!institution.trim()) return toast.error("Institution / Organization required");
+    setSaving(true);
+    const payload: any = {
+      user_id: userId, level, institution: institution.trim(), is_mandatory: false,
+    };
+    if (level === "certification") {
+      payload.organization = organization.trim() || institution.trim();
+      payload.year_awarded = year ? Number(year) : null;
+    } else {
+      if (level !== "high_school") payload.major = major.trim() || null;
+      payload.country = country.trim() || null;
+      payload.graduation_year = year ? Number(year) : null;
+      if (honors.trim()) payload.honors = honors.trim();
+    }
+    const { error } = await supabase.from("education_records").insert(payload);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Added");
+    reset(); setOpen(false); onSaved();
+  };
+
+  const isCert = level === "certification";
+  const isHs = level === "high_school";
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
+      <DialogTrigger asChild><Button size="sm">Add entry</Button></DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Add education entry</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label className="mb-1.5 block">Type</Label>
+            <Select value={level} onValueChange={setLevel}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {EDU_LEVELS.map((l) => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="mb-1.5 block">{isCert ? "Certification name" : isHs ? "School name" : "University"}</Label>
+            <Input value={institution} onChange={(e) => setInstitution(e.target.value)} />
+          </div>
+          {isCert && (
+            <div>
+              <Label className="mb-1.5 block">Issuing organization</Label>
+              <Input value={organization} onChange={(e) => setOrganization(e.target.value)} />
+            </div>
+          )}
+          {!isCert && !isHs && (
+            <div>
+              <Label className="mb-1.5 block">Major</Label>
+              <Input value={major} onChange={(e) => setMajor(e.target.value)} />
+            </div>
+          )}
+          {!isCert && (
+            <div>
+              <Label className="mb-1.5 block">Country</Label>
+              <Input value={country} onChange={(e) => setCountry(e.target.value)} />
+            </div>
+          )}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label className="mb-1.5 block">{isCert ? "Year awarded" : "Graduation year"}</Label>
+              <Input type="number" min={1950} max={2035} value={year} onChange={(e) => setYear(e.target.value)} />
+            </div>
+            {!isCert && !isHs && (
+              <div>
+                <Label className="mb-1.5 block">Honors</Label>
+                <Input value={honors} onChange={(e) => setHonors(e.target.value)} />
+              </div>
+            )}
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={submit} disabled={saving}>{saving ? "Saving…" : "Add entry"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
