@@ -73,7 +73,7 @@ function RegisterPage() {
           facebook_url: f.facebook_url, instagram_url: f.instagram_url, linkedin_url: f.linkedin_url, personal_website: f.personal_website,
           student_id: f.student_id, program_type: f.program_type, major: f.major,
           admission_year: f.admission_year, graduation_year: f.graduation_year, generation: f.generation,
-          partner_university: f.partner_university,
+          partner_university: f.partner_university, honors: f.honors,
         },
       },
     });
