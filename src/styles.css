@@ -105,11 +105,20 @@
   }
   html, body {
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+    font-feature-settings: "ss01", "ss02";
+    font-weight: 500;
+    letter-spacing: -0.015em;
+  }
+}
   h1, h2, h3, h4, .font-display {
     font-family: var(--font-display);
     font-feature-settings: "ss01", "ss02";
