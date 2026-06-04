@@ -59,7 +59,6 @@ function RegisterPage() {
       return true;
     }
     if (step === 4) return f.c_data && f.c_directory;
-    if (step === 5) return !!avatarFile;
     return false;
   };
 
