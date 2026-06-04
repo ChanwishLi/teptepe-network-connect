@@ -70,6 +70,7 @@ function RegisterPage() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validateStep()) return toast.error("Missing required consents.");
+    if (!avatarFile) return toast.error("Profile picture is required.");
     setLoading(true);
 
     const { data, error } = await supabase.auth.signUp({
@@ -90,6 +91,12 @@ function RegisterPage() {
     if (error) { setLoading(false); return toast.error(error.message); }
 
     if (data.user) {
+      const ext = (avatarFile.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${data.user.id}/avatar.${ext}`;
+      const up = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true, contentType: avatarFile.type });
+      if (!up.error) {
+        await supabase.from("profiles").update({ avatar_url: path }).eq("id", data.user.id);
+      }
       await supabase.from("consent_records").insert({
         user_id: data.user.id, consent_version: CONSENT_VERSION,
         data_collection: f.c_data, directory_participation: f.c_directory,
@@ -97,7 +104,7 @@ function RegisterPage() {
       });
     }
     setLoading(false);
-    toast.success("Account created. Welcome!");
+    toast.success("Account created. Awaiting admin approval.");
     navigate({ to: "/profile" });
   };
 
