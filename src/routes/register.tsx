@@ -31,17 +31,27 @@ const initial: FormState = {
   c_data: false, c_directory: false, c_comms: false, c_mentor: false,
 };
 
+const TOTAL_STEPS = 5;
+
 function RegisterPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [f, setF] = useState<FormState>(initial);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setF((p) => ({ ...p, [k]: v }));
   const partners = f.program_type ? PARTNER_UNIVERSITIES[f.program_type] : [];
 
+  const onAvatarChange = (file: File | null) => {
+    setAvatarFile(file);
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarPreview(file ? URL.createObjectURL(file) : "");
+  };
+
   const validateStep = () => {
-    if (step === 1) return f.first_name && f.last_name && f.gender && f.date_of_birth && f.nationality;
+    if (step === 1) return f.first_name && f.last_name && f.gender && f.date_of_birth && f.nationality && !!avatarFile;
     if (step === 2) return f.email && f.password.length >= 8 && f.country;
     if (step === 3) {
       if (!f.program_type || !f.major || !f.generation || !f.graduation_year || !f.admission_year) return false;
@@ -49,6 +59,7 @@ function RegisterPage() {
       return true;
     }
     if (step === 4) return f.c_data && f.c_directory;
+    if (step === 5) return !!avatarFile;
     return false;
   };
 
