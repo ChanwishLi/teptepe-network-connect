@@ -140,6 +140,14 @@ function RegisterPage() {
             {step === 1 && (
               <>
                 <h2 className="font-display text-lg font-semibold">Personal information</h2>
+                <Field label="Profile picture *" hint="Required. Square images work best.">
+                  <div className="flex items-center gap-4">
+                    <div className="h-20 w-20 overflow-hidden rounded-full border bg-muted">
+                      {avatarPreview ? <img src={avatarPreview} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">No photo</div>}
+                    </div>
+                    <Input type="file" accept="image/*" onChange={(e) => onAvatarChange(e.target.files?.[0] ?? null)} className="max-w-xs" />
+                  </div>
+                </Field>
                 <Grid2><Field label="First name *"><Input value={f.first_name} onChange={(e) => set("first_name", e.target.value)} required /></Field>
                 <Field label="Last name *"><Input value={f.last_name} onChange={(e) => set("last_name", e.target.value)} required /></Field></Grid2>
                 <Field label="Preferred name"><Input value={f.preferred_name} onChange={(e) => set("preferred_name", e.target.value)} /></Field>
