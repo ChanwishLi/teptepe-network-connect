@@ -31,7 +31,7 @@ const initial: FormState = {
   c_data: false, c_directory: false, c_comms: false, c_mentor: false,
 };
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 function RegisterPage() {
   const navigate = useNavigate();
