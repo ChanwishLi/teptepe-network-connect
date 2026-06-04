@@ -31,17 +31,27 @@ const initial: FormState = {
   c_data: false, c_directory: false, c_comms: false, c_mentor: false,
 };
 
+const TOTAL_STEPS = 4;
+
 function RegisterPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [f, setF] = useState<FormState>(initial);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setF((p) => ({ ...p, [k]: v }));
   const partners = f.program_type ? PARTNER_UNIVERSITIES[f.program_type] : [];
 
+  const onAvatarChange = (file: File | null) => {
+    setAvatarFile(file);
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    setAvatarPreview(file ? URL.createObjectURL(file) : "");
+  };
+
   const validateStep = () => {
-    if (step === 1) return f.first_name && f.last_name && f.gender && f.date_of_birth && f.nationality;
+    if (step === 1) return f.first_name && f.last_name && f.gender && f.date_of_birth && f.nationality && !!avatarFile;
     if (step === 2) return f.email && f.password.length >= 8 && f.country;
     if (step === 3) {
       if (!f.program_type || !f.major || !f.generation || !f.graduation_year || !f.admission_year) return false;
@@ -60,6 +70,7 @@ function RegisterPage() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (!validateStep()) return toast.error("Missing required consents.");
+    if (!avatarFile) return toast.error("Profile picture is required.");
     setLoading(true);
 
     const { data, error } = await supabase.auth.signUp({
@@ -80,6 +91,12 @@ function RegisterPage() {
     if (error) { setLoading(false); return toast.error(error.message); }
 
     if (data.user) {
+      const ext = (avatarFile.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${data.user.id}/avatar.${ext}`;
+      const up = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true, contentType: avatarFile.type });
+      if (!up.error) {
+        await supabase.from("profiles").update({ avatar_url: path }).eq("id", data.user.id);
+      }
       await supabase.from("consent_records").insert({
         user_id: data.user.id, consent_version: CONSENT_VERSION,
         data_collection: f.c_data, directory_participation: f.c_directory,
@@ -87,7 +104,7 @@ function RegisterPage() {
       });
     }
     setLoading(false);
-    toast.success("Account created. Welcome!");
+    toast.success("Account created. Awaiting admin approval.");
     navigate({ to: "/profile" });
   };
 
@@ -123,6 +140,14 @@ function RegisterPage() {
             {step === 1 && (
               <>
                 <h2 className="font-display text-lg font-semibold">Personal information</h2>
+                <Field label="Profile picture *" hint="Required. Square images work best.">
+                  <div className="flex items-center gap-4">
+                    <div className="h-20 w-20 overflow-hidden rounded-full border bg-muted">
+                      {avatarPreview ? <img src={avatarPreview} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">No photo</div>}
+                    </div>
+                    <Input type="file" accept="image/*" onChange={(e) => onAvatarChange(e.target.files?.[0] ?? null)} className="max-w-xs" />
+                  </div>
+                </Field>
                 <Grid2><Field label="First name *"><Input value={f.first_name} onChange={(e) => set("first_name", e.target.value)} required /></Field>
                 <Field label="Last name *"><Input value={f.last_name} onChange={(e) => set("last_name", e.target.value)} required /></Field></Grid2>
                 <Field label="Preferred name"><Input value={f.preferred_name} onChange={(e) => set("preferred_name", e.target.value)} /></Field>

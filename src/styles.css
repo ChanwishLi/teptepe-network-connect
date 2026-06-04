@@ -41,34 +41,34 @@
 
 :root {
   --radius: 0.625rem;
-  /* Cream paper backdrop */
-  --background: oklch(0.985 0.008 75);
-  --foreground: oklch(0.18 0.02 30);
+  /* Warm paper backdrop */
+  --background: oklch(0.985 0.006 75);
+  --foreground: oklch(0.22 0.02 40);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 30);
+  --card-foreground: oklch(0.22 0.02 40);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 30);
-  /* TEP-TEPE crimson */
-  --primary: oklch(0.38 0.15 18);
-  --primary-foreground: oklch(0.985 0.008 75);
-  --primary-soft: oklch(0.95 0.03 18);
-  --secondary: oklch(0.94 0.015 60);
-  --secondary-foreground: oklch(0.25 0.03 30);
-  --muted: oklch(0.95 0.012 75);
-  --muted-foreground: oklch(0.48 0.02 30);
-  --accent: oklch(0.92 0.04 60);
-  --accent-foreground: oklch(0.25 0.05 30);
-  /* Gold anniversary accent */
-  --gold: oklch(0.78 0.12 75);
-  --destructive: oklch(0.55 0.22 27);
-  --destructive-foreground: oklch(0.985 0.008 75);
-  --border: oklch(0.9 0.012 60);
-  --input: oklch(0.9 0.012 60);
-  --ring: oklch(0.38 0.15 18);
-  --sidebar: oklch(0.99 0.008 75);
-  --sidebar-foreground: oklch(0.25 0.03 30);
-  --sidebar-accent: oklch(0.95 0.03 18);
-  --sidebar-border: oklch(0.9 0.012 60);
+  --popover-foreground: oklch(0.22 0.02 40);
+  /* TEP-TEPE orange #f26522 */
+  --primary: oklch(0.685 0.181 45);
+  --primary-foreground: oklch(0.99 0.005 75);
+  --primary-soft: oklch(0.96 0.04 50);
+  --secondary: oklch(0.96 0.012 60);
+  --secondary-foreground: oklch(0.28 0.025 40);
+  --muted: oklch(0.965 0.008 75);
+  --muted-foreground: oklch(0.5 0.015 40);
+  --accent: oklch(0.94 0.05 55);
+  --accent-foreground: oklch(0.3 0.06 40);
+  /* Warm gold accent */
+  --gold: oklch(0.82 0.13 80);
+  --destructive: oklch(0.58 0.22 27);
+  --destructive-foreground: oklch(0.99 0.005 75);
+  --border: oklch(0.92 0.008 60);
+  --input: oklch(0.92 0.008 60);
+  --ring: oklch(0.685 0.181 45);
+  --sidebar: oklch(0.99 0.006 75);
+  --sidebar-foreground: oklch(0.28 0.025 40);
+  --sidebar-accent: oklch(0.96 0.04 50);
+  --sidebar-border: oklch(0.92 0.008 60);
 }
 
 .dark {
@@ -105,6 +105,8 @@
   }
   html, body {
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   body {
     background-color: var(--color-background);
@@ -113,6 +115,7 @@
   h1, h2, h3, h4, .font-display {
     font-family: var(--font-display);
     font-feature-settings: "ss01", "ss02";
-    letter-spacing: -0.01em;
+    font-weight: 500;
+    letter-spacing: -0.015em;
   }
 }
