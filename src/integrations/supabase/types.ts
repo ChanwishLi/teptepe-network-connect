@@ -631,19 +631,31 @@ export type Database = {
           city: string | null
           country: string | null
           created_at: string | null
+          email: string | null
           expertise: string[] | null
+          facebook_url: string | null
           first_name: string | null
           generation: number | null
           graduation_year: number | null
           id: string | null
+          instagram_url: string | null
           is_featured: boolean | null
           last_name: string | null
+          linkedin_url: string | null
           major: Database["public"]["Enums"]["major_type"] | null
           partner_university: string | null
+          personal_website: string | null
+          phone: string | null
           preferred_name: string | null
           professional_summary: string | null
           program_type: Database["public"]["Enums"]["program_type"] | null
           research_interests: string[] | null
+          show_email: boolean | null
+          show_facebook: boolean | null
+          show_instagram: boolean | null
+          show_linkedin: boolean | null
+          show_phone: boolean | null
+          show_website: boolean | null
           skills: string[] | null
         }
         Relationships: []
