@@ -19,7 +19,7 @@ function AlumniDetail() {
     queryKey: ["alumni", id],
     queryFn: async () => {
       const [profile, edu, emp, mentor] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
+        supabase.from("profiles_public" as any).select("*").eq("id", id).maybeSingle(),
         supabase.from("education_records").select("*").eq("user_id", id).order("graduation_year", { ascending: false }),
         supabase.from("employment_records").select("*").eq("user_id", id).order("start_year", { ascending: false }),
         supabase.from("mentorship_settings").select("*").eq("user_id", id).maybeSingle(),
