@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/site-shell";
@@ -21,7 +21,7 @@ function NewsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("news_posts")
-        .select("*")
+        .select("id, slug, title, summary, image_url, published_at")
         .eq("is_published", true)
         .order("published_at", { ascending: false });
       if (error) throw error;
@@ -31,10 +31,10 @@ function NewsPage() {
 
   return (
     <PageShell>
-      <section className="mx-auto max-w-5xl px-4 py-16 lg:px-8">
+      <section className="mx-auto max-w-6xl px-4 py-16 lg:px-8">
         <header className="mb-10">
           <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Updates</div>
-          <h1 className="mt-2 font-display text-4xl font-bold sm:text-5xl">News</h1>
+          <h1 className="mt-2 font-display text-4xl font-semibold sm:text-5xl">News</h1>
         </header>
 
         {isLoading ? (
@@ -46,15 +46,24 @@ function NewsPage() {
             <p className="text-sm text-muted-foreground">Announcements will appear here as they're published.</p>
           </Card>
         ) : (
-          <div className="space-y-4">
-            {data.map((n) => (
-              <Card key={n.id} className="p-6">
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                  {n.published_at && new Date(n.published_at).toLocaleDateString(undefined, { dateStyle: "medium" })}
-                </div>
-                <h3 className="mt-2 font-display text-2xl font-semibold">{n.title}</h3>
-                {n.summary && <p className="mt-2 text-sm text-muted-foreground">{n.summary}</p>}
-              </Card>
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {data.map((n: any) => (
+              <Link key={n.id} to="/news/$id" params={{ id: n.slug || n.id }} preload="intent">
+                <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
+                  {n.image_url ? (
+                    <img src={n.image_url} alt="" className="h-44 w-full object-cover" />
+                  ) : (
+                    <div className="h-44 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
+                  )}
+                  <div className="p-5">
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                      {n.published_at && new Date(n.published_at).toLocaleDateString(undefined, { dateStyle: "medium" })}
+                    </div>
+                    <h3 className="mt-2 font-display text-xl font-semibold">{n.title}</h3>
+                    {n.summary && <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{n.summary}</p>}
+                  </div>
+                </Card>
+              </Link>
             ))}
           </div>
         )}
