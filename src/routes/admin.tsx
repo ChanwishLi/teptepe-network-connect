@@ -260,14 +260,16 @@ function EventsAdmin() {
       title="Events"
       table="events"
       orderBy="event_date"
-      defaultRow={{ name: "", event_date: "", event_time: "", location: "", description: "", banner_url: "", rsvp_deadline: "", is_published: false, is_archived: false }}
+      defaultRow={{ name: "", slug: "", event_date: "", event_time: "", location: "", description: "", content: "", banner_url: "", rsvp_deadline: "", is_published: false, is_archived: false }}
       fields={[
         { name: "name", label: "Title" },
+        { name: "slug", label: "URL slug (e.g. reunion-2026)" },
         { name: "event_date", label: "Date", type: "date" },
         { name: "event_time", label: "Time (HH:MM)" },
         { name: "location", label: "Location" },
-        { name: "description", label: "Description", type: "textarea" },
-        { name: "banner_url", label: "Banner URL", type: "url" },
+        { name: "description", label: "Short description (preview)", type: "textarea", rows: 2 },
+        { name: "content", label: "Full blog content", type: "textarea", rows: 10 },
+        { name: "banner_url", label: "Banner image URL", type: "url" },
         { name: "rsvp_deadline", label: "RSVP deadline", type: "date" },
         { name: "is_published", label: "Published", type: "switch" },
         { name: "is_archived", label: "Archived", type: "switch" },
@@ -276,6 +278,31 @@ function EventsAdmin() {
         <div>
           <div className="font-medium">{r.name} {r.is_published ? <Badge variant="outline" className="ml-2">Published</Badge> : <Badge variant="secondary" className="ml-2">Draft</Badge>}</div>
           <div className="text-xs text-muted-foreground">{r.event_date} {r.event_time ?? ""} · {r.location ?? "—"}</div>
+        </div>
+      )}
+    />
+  );
+}
+
+function NewsAdmin() {
+  return (
+    <CrudSection
+      title="News"
+      table="news_posts"
+      defaultRow={{ title: "", slug: "", summary: "", content: "", image_url: "", is_published: false, published_at: "" }}
+      fields={[
+        { name: "title", label: "Title" },
+        { name: "slug", label: "URL slug (e.g. new-partnership)" },
+        { name: "summary", label: "Summary (preview)", type: "textarea", rows: 2 },
+        { name: "content", label: "Full blog content", type: "textarea", rows: 10 },
+        { name: "image_url", label: "Cover image URL", type: "url" },
+        { name: "published_at", label: "Publish date", type: "date" },
+        { name: "is_published", label: "Published", type: "switch" },
+      ]}
+      listColumns={(r) => (
+        <div>
+          <div className="font-medium">{r.title} {r.is_published ? <Badge variant="outline" className="ml-2">Live</Badge> : <Badge variant="secondary" className="ml-2">Draft</Badge>}</div>
+          <div className="text-xs text-muted-foreground line-clamp-1">{r.summary ?? ""}</div>
         </div>
       )}
     />
