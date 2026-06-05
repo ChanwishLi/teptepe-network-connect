@@ -24,7 +24,7 @@ function AlumniDetail() {
         supabase.from("employment_records").select("*").eq("user_id", id).order("start_year", { ascending: false }),
         supabase.from("mentorship_settings").select("*").eq("user_id", id).maybeSingle(),
       ]);
-      return { profile: profile.data, edu: edu.data ?? [], emp: emp.data ?? [], mentor: mentor.data };
+      return { profile: profile.data as any, edu: edu.data ?? [], emp: emp.data ?? [], mentor: mentor.data };
     },
   });
 
