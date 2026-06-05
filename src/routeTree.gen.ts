@@ -21,6 +21,7 @@ import { Route as DirectoryRouteImport } from './routes/directory'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InternshipsNewRouteImport } from './routes/internships.new'
+import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as AlumniIdRouteImport } from './routes/alumni.$id'
 
 const StoriesRoute = StoriesRouteImport.update({
@@ -83,6 +84,11 @@ const InternshipsNewRoute = InternshipsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => InternshipsRoute,
 } as any)
+const EventsIdRoute = EventsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => EventsRoute,
+} as any)
 const AlumniIdRoute = AlumniIdRouteImport.update({
   id: '/alumni/$id',
   path: '/alumni/$id',
@@ -93,7 +99,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/directory': typeof DirectoryRoute
-  '/events': typeof EventsRoute
+  '/events': typeof EventsRouteWithChildren
   '/internships': typeof InternshipsRouteWithChildren
   '/login': typeof LoginRoute
   '/news': typeof NewsRoute
@@ -102,13 +108,14 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/stories': typeof StoriesRoute
   '/alumni/$id': typeof AlumniIdRoute
+  '/events/$id': typeof EventsIdRoute
   '/internships/new': typeof InternshipsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/directory': typeof DirectoryRoute
-  '/events': typeof EventsRoute
+  '/events': typeof EventsRouteWithChildren
   '/internships': typeof InternshipsRouteWithChildren
   '/login': typeof LoginRoute
   '/news': typeof NewsRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/stories': typeof StoriesRoute
   '/alumni/$id': typeof AlumniIdRoute
+  '/events/$id': typeof EventsIdRoute
   '/internships/new': typeof InternshipsNewRoute
 }
 export interface FileRoutesById {
@@ -124,7 +132,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/directory': typeof DirectoryRoute
-  '/events': typeof EventsRoute
+  '/events': typeof EventsRouteWithChildren
   '/internships': typeof InternshipsRouteWithChildren
   '/login': typeof LoginRoute
   '/news': typeof NewsRoute
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/stories': typeof StoriesRoute
   '/alumni/$id': typeof AlumniIdRoute
+  '/events/$id': typeof EventsIdRoute
   '/internships/new': typeof InternshipsNewRoute
 }
 export interface FileRouteTypes {
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/stories'
     | '/alumni/$id'
+    | '/events/$id'
     | '/internships/new'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/stories'
     | '/alumni/$id'
+    | '/events/$id'
     | '/internships/new'
   id:
     | '__root__'
@@ -180,6 +191,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/stories'
     | '/alumni/$id'
+    | '/events/$id'
     | '/internships/new'
   fileRoutesById: FileRoutesById
 }
@@ -187,7 +199,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   DirectoryRoute: typeof DirectoryRoute
-  EventsRoute: typeof EventsRoute
+  EventsRoute: typeof EventsRouteWithChildren
   InternshipsRoute: typeof InternshipsRouteWithChildren
   LoginRoute: typeof LoginRoute
   NewsRoute: typeof NewsRoute
@@ -284,6 +296,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InternshipsNewRouteImport
       parentRoute: typeof InternshipsRoute
     }
+    '/events/$id': {
+      id: '/events/$id'
+      path: '/$id'
+      fullPath: '/events/$id'
+      preLoaderRoute: typeof EventsIdRouteImport
+      parentRoute: typeof EventsRoute
+    }
     '/alumni/$id': {
       id: '/alumni/$id'
       path: '/alumni/$id'
@@ -293,6 +312,17 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface EventsRouteChildren {
+  EventsIdRoute: typeof EventsIdRoute
+}
+
+const EventsRouteChildren: EventsRouteChildren = {
+  EventsIdRoute: EventsIdRoute,
+}
+
+const EventsRouteWithChildren =
+  EventsRoute._addFileChildren(EventsRouteChildren)
 
 interface InternshipsRouteChildren {
   InternshipsNewRoute: typeof InternshipsNewRoute
@@ -310,7 +340,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   DirectoryRoute: DirectoryRoute,
-  EventsRoute: EventsRoute,
+  EventsRoute: EventsRouteWithChildren,
   InternshipsRoute: InternshipsRouteWithChildren,
   LoginRoute: LoginRoute,
   NewsRoute: NewsRoute,
