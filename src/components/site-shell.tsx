@@ -3,9 +3,10 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { LogOut, Menu, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import logoAsset from "@/assets/tep-tepe-logo.png.asset.json";
 
 export function SiteHeader() {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, signOut, loading } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -23,16 +24,10 @@ export function SiteHeader() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
-        <Link to="/" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground font-display text-lg font-bold">
-            T
-          </div>
-          <div className="leading-tight">
-            <div className="font-display text-base font-bold tracking-tight">TEP-TEPE</div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Alumni Network</div>
-          </div>
+        <Link to="/" className="flex items-center gap-2">
+          <img src={logoAsset.url} alt="TEP-TEPE" className="h-10 w-auto" />
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
@@ -40,6 +35,7 @@ export function SiteHeader() {
             <Link
               key={l.to}
               to={l.to}
+              preload="intent"
               className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               activeProps={{ className: "text-foreground bg-muted" }}
             >
@@ -48,8 +44,9 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 lg:flex">
-          {user ? (
+        {/* Reserve space to avoid layout jitter while auth resolves */}
+        <div className="hidden items-center gap-2 lg:flex min-w-[180px] justify-end">
+          {loading ? null : user ? (
             <>
               {isAdmin && (
                 <Button asChild variant="ghost" size="sm">
