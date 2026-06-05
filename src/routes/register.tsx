@@ -105,11 +105,12 @@ function RegisterPage() {
     }
     setLoading(false);
     toast.success("Account created. Awaiting admin approval.");
-    navigate({ to: "/profile" });
+    navigate({ to: "/directory", replace: true });
   };
 
   const googleSignIn = async () => {
-    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/profile` });
+    // Land on /profile so users complete their profile before being approved.
+    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/profile?complete=1` });
     if (res.error) toast.error(res.error.message || "Google sign-in failed");
   };
 
