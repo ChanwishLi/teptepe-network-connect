@@ -172,6 +172,7 @@ export type Database = {
       events: {
         Row: {
           banner_url: string | null
+          content: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -183,10 +184,12 @@ export type Database = {
           location: string | null
           name: string
           rsvp_deadline: string | null
+          slug: string | null
           updated_at: string
         }
         Insert: {
           banner_url?: string | null
+          content?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -198,10 +201,12 @@ export type Database = {
           location?: string | null
           name: string
           rsvp_deadline?: string | null
+          slug?: string | null
           updated_at?: string
         }
         Update: {
           banner_url?: string | null
+          content?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -213,6 +218,7 @@ export type Database = {
           location?: string | null
           name?: string
           rsvp_deadline?: string | null
+          slug?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -334,6 +340,7 @@ export type Database = {
           image_url: string | null
           is_published: boolean
           published_at: string | null
+          slug: string | null
           summary: string | null
           title: string
           updated_at: string
@@ -346,6 +353,7 @@ export type Database = {
           image_url?: string | null
           is_published?: boolean
           published_at?: string | null
+          slug?: string | null
           summary?: string | null
           title: string
           updated_at?: string
@@ -358,6 +366,7 @@ export type Database = {
           image_url?: string | null
           is_published?: boolean
           published_at?: string | null
+          slug?: string | null
           summary?: string | null
           title?: string
           updated_at?: string
@@ -505,6 +514,8 @@ export type Database = {
           id: string
           image_url: string | null
           is_published: boolean
+          slug: string | null
+          summary: string | null
           title: string
           updated_at: string
         }
@@ -519,6 +530,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_published?: boolean
+          slug?: string | null
+          summary?: string | null
           title: string
           updated_at?: string
         }
@@ -533,6 +546,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_published?: boolean
+          slug?: string | null
+          summary?: string | null
           title?: string
           updated_at?: string
         }
@@ -650,12 +665,6 @@ export type Database = {
           professional_summary: string | null
           program_type: Database["public"]["Enums"]["program_type"] | null
           research_interests: string[] | null
-          show_email: boolean | null
-          show_facebook: boolean | null
-          show_instagram: boolean | null
-          show_linkedin: boolean | null
-          show_phone: boolean | null
-          show_website: boolean | null
           skills: string[] | null
         }
         Relationships: []
