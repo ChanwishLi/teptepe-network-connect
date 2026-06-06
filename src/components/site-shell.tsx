@@ -24,13 +24,12 @@ function SiteHeaderInner() {
     router.navigate({ to: "/" });
   };
 
-  const links: Array<{ to: string; label: string }> = [
+  const links: Array<{ to: string; label: string }> = user ? [
     { to: "/directory", label: "Directory" },
+    { to: "/internships", label: "Opportunities" },
     { to: "/events", label: "Events" },
-    { to: "/internships", label: "Internships" },
     { to: "/stories", label: "Stories" },
-    { to: "/news", label: "News" },
-  ];
+  ] : [];
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-md">
