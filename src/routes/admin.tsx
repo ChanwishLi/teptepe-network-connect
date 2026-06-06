@@ -208,9 +208,9 @@ function CrudSection<T extends { id: string }>({
           <DialogTrigger asChild>
             <Button size="sm" onClick={() => setEditing({ ...defaultRow })}><Plus className="mr-1.5 h-4 w-4" /> New</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <DialogHeader><DialogTitle>{editing?.id ? "Edit" : "Create"} {title}</DialogTitle></DialogHeader>
-            <div className="space-y-3">
+            <div className="space-y-3 overflow-y-auto pr-2 flex-1">
               {fields.map((f) => (
                 <div key={f.name}>
                   <Label className="mb-1.5 block text-xs uppercase tracking-wider text-muted-foreground">{f.label}</Label>
