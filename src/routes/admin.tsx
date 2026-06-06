@@ -43,10 +43,9 @@ function AdminPage() {
 
         <Tabs defaultValue="approvals" className="mt-8">
           <TabsList className="flex flex-wrap">
-            <TabsTrigger value="approvals">Internship approvals</TabsTrigger>
+            <TabsTrigger value="approvals">Opportunity approvals</TabsTrigger>
             <TabsTrigger value="members">Members</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="news">News</TabsTrigger>
             <TabsTrigger value="stories">Stories</TabsTrigger>
             <TabsTrigger value="partners">Partners</TabsTrigger>
           </TabsList>
@@ -54,7 +53,6 @@ function AdminPage() {
           <TabsContent value="approvals"><InternshipApprovals /></TabsContent>
           <TabsContent value="members"><MembersAdmin /></TabsContent>
           <TabsContent value="events"><EventsAdmin /></TabsContent>
-          <TabsContent value="news"><NewsAdmin /></TabsContent>
           <TabsContent value="stories"><StoriesAdmin /></TabsContent>
           <TabsContent value="partners"><PartnersAdmin /></TabsContent>
         </Tabs>
