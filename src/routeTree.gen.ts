@@ -13,7 +13,6 @@ import { Route as StoriesRouteImport } from './routes/stories'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as NewsRouteImport } from './routes/news'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InternshipsRouteImport } from './routes/internships'
 import { Route as EventsRouteImport } from './routes/events'
@@ -44,11 +43,6 @@ const RegisterRoute = RegisterRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NewsRoute = NewsRouteImport.update({
-  id: '/news',
-  path: '/news',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -114,7 +108,6 @@ export interface FileRoutesByFullPath {
   '/events': typeof EventsRouteWithChildren
   '/internships': typeof InternshipsRouteWithChildren
   '/login': typeof LoginRoute
-  '/news': typeof NewsRouteWithChildren
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -132,7 +125,6 @@ export interface FileRoutesByTo {
   '/events': typeof EventsRouteWithChildren
   '/internships': typeof InternshipsRouteWithChildren
   '/login': typeof LoginRoute
-  '/news': typeof NewsRouteWithChildren
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -151,7 +143,6 @@ export interface FileRoutesById {
   '/events': typeof EventsRouteWithChildren
   '/internships': typeof InternshipsRouteWithChildren
   '/login': typeof LoginRoute
-  '/news': typeof NewsRouteWithChildren
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -171,7 +162,6 @@ export interface FileRouteTypes {
     | '/events'
     | '/internships'
     | '/login'
-    | '/news'
     | '/profile'
     | '/register'
     | '/reset-password'
@@ -189,7 +179,6 @@ export interface FileRouteTypes {
     | '/events'
     | '/internships'
     | '/login'
-    | '/news'
     | '/profile'
     | '/register'
     | '/reset-password'
@@ -207,7 +196,6 @@ export interface FileRouteTypes {
     | '/events'
     | '/internships'
     | '/login'
-    | '/news'
     | '/profile'
     | '/register'
     | '/reset-password'
@@ -226,7 +214,6 @@ export interface RootRouteChildren {
   EventsRoute: typeof EventsRouteWithChildren
   InternshipsRoute: typeof InternshipsRouteWithChildren
   LoginRoute: typeof LoginRoute
-  NewsRoute: typeof NewsRouteWithChildren
   ProfileRoute: typeof ProfileRoute
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -262,13 +249,6 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/news': {
-      id: '/news'
-      path: '/news'
-      fullPath: '/news'
-      preLoaderRoute: typeof NewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -374,16 +354,6 @@ const InternshipsRouteWithChildren = InternshipsRoute._addFileChildren(
   InternshipsRouteChildren,
 )
 
-interface NewsRouteChildren {
-  NewsIdRoute: typeof NewsIdRoute
-}
-
-const NewsRouteChildren: NewsRouteChildren = {
-  NewsIdRoute: NewsIdRoute,
-}
-
-const NewsRouteWithChildren = NewsRoute._addFileChildren(NewsRouteChildren)
-
 interface StoriesRouteChildren {
   StoriesIdRoute: typeof StoriesIdRoute
 }
@@ -402,7 +372,6 @@ const rootRouteChildren: RootRouteChildren = {
   EventsRoute: EventsRouteWithChildren,
   InternshipsRoute: InternshipsRouteWithChildren,
   LoginRoute: LoginRoute,
-  NewsRoute: NewsRouteWithChildren,
   ProfileRoute: ProfileRoute,
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
@@ -412,3 +381,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
