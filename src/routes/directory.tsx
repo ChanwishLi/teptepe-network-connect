@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, X } from "lucide-react";
 import { PROGRAM_TYPES, MAJORS, GENERATIONS, generationStatus } from "@/lib/constants";
+import { useAvatarUrl } from "@/lib/avatar";
 
 export const Route = createFileRoute("/directory")({
   head: () => ({ meta: [{ title: "Alumni Directory — TEP-TEPE" }, { name: "description", content: "Search and connect with TEP-TEPE alumni around the world." }] }),
