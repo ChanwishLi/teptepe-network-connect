@@ -1,11 +1,20 @@
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { LogOut, Menu, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import logoAsset from "@/assets/tep-tepe-logo.png.asset.json";
 
+// Routes where the navbar should be hidden to focus the onboarding flow.
+const ONBOARDING_PATHS = ["/register", "/complete-profile"];
+
 export function SiteHeader() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  if (ONBOARDING_PATHS.some((p) => pathname.startsWith(p))) return null;
+  return <SiteHeaderInner />;
+}
+
+function SiteHeaderInner() {
   const { user, isAdmin, signOut, loading } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
