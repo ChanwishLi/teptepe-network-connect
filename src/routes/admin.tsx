@@ -43,10 +43,9 @@ function AdminPage() {
 
         <Tabs defaultValue="approvals" className="mt-8">
           <TabsList className="flex flex-wrap">
-            <TabsTrigger value="approvals">Internship approvals</TabsTrigger>
+            <TabsTrigger value="approvals">Opportunity approvals</TabsTrigger>
             <TabsTrigger value="members">Members</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="news">News</TabsTrigger>
             <TabsTrigger value="stories">Stories</TabsTrigger>
             <TabsTrigger value="partners">Partners</TabsTrigger>
           </TabsList>
@@ -54,7 +53,6 @@ function AdminPage() {
           <TabsContent value="approvals"><InternshipApprovals /></TabsContent>
           <TabsContent value="members"><MembersAdmin /></TabsContent>
           <TabsContent value="events"><EventsAdmin /></TabsContent>
-          <TabsContent value="news"><NewsAdmin /></TabsContent>
           <TabsContent value="stories"><StoriesAdmin /></TabsContent>
           <TabsContent value="partners"><PartnersAdmin /></TabsContent>
         </Tabs>
@@ -210,9 +208,9 @@ function CrudSection<T extends { id: string }>({
           <DialogTrigger asChild>
             <Button size="sm" onClick={() => setEditing({ ...defaultRow })}><Plus className="mr-1.5 h-4 w-4" /> New</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
             <DialogHeader><DialogTitle>{editing?.id ? "Edit" : "Create"} {title}</DialogTitle></DialogHeader>
-            <div className="space-y-3">
+            <div className="space-y-3 overflow-y-auto pr-2 flex-1">
               {fields.map((f) => (
                 <div key={f.name}>
                   <Label className="mb-1.5 block text-xs uppercase tracking-wider text-muted-foreground">{f.label}</Label>
@@ -284,30 +282,8 @@ function EventsAdmin() {
   );
 }
 
-function NewsAdmin() {
-  return (
-    <CrudSection
-      title="News"
-      table="news_posts"
-      defaultRow={{ title: "", slug: "", summary: "", content: "", image_url: "", is_published: false, published_at: "" }}
-      fields={[
-        { name: "title", label: "Title" },
-        { name: "slug", label: "URL slug (e.g. new-partnership)" },
-        { name: "summary", label: "Summary (preview)", type: "textarea", rows: 2 },
-        { name: "content", label: "Full blog content", type: "textarea", rows: 10 },
-        { name: "image_url", label: "Cover image URL", type: "url" },
-        { name: "published_at", label: "Publish date", type: "date" },
-        { name: "is_published", label: "Published", type: "switch" },
-      ]}
-      listColumns={(r) => (
-        <div>
-          <div className="font-medium">{r.title} {r.is_published ? <Badge variant="outline" className="ml-2">Live</Badge> : <Badge variant="secondary" className="ml-2">Draft</Badge>}</div>
-          <div className="text-xs text-muted-foreground line-clamp-1">{r.summary ?? ""}</div>
-        </div>
-      )}
-    />
-  );
-}
+
+
 
 
 function StoriesAdmin() {

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, X } from "lucide-react";
 import { PROGRAM_TYPES, MAJORS, GENERATIONS, generationStatus } from "@/lib/constants";
+import { useAvatarUrl } from "@/lib/avatar";
 
 export const Route = createFileRoute("/directory")({
   head: () => ({ meta: [{ title: "Alumni Directory — TEP-TEPE" }, { name: "description", content: "Search and connect with TEP-TEPE alumni around the world." }] }),
@@ -83,32 +84,41 @@ function DirectoryPage() {
         </Card>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {(data ?? []).map((p: any) => (
-            <Link key={p.id} to="/alumni/$id" params={{ id: p.id }}>
-              <Card className="group h-full overflow-hidden p-5 transition-all hover:border-primary/50 hover:shadow-md">
-                <div className="flex items-start justify-between">
-                  <div className="h-16 w-16 overflow-hidden rounded-full bg-muted">
-                    {p.avatar_url ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" /> : null}
-                  </div>
-                  <Badge variant="outline" className="border-primary/30 text-primary">TEP #{p.generation}</Badge>
-                </div>
-                <div className="mt-4">
-                  <div className="font-display text-lg font-semibold">{p.first_name} {p.last_name}</div>
-                  <div className="text-xs text-muted-foreground">{p.program_type} · {p.major}</div>
-                  <div className="mt-1 text-xs text-muted-foreground">{[p.city, p.country].filter(Boolean).join(", ")}</div>
-                </div>
-                {p.mentorship_settings?.available_as_mentor && (
-                  <Badge className="mt-3 bg-[var(--gold)]/20 text-foreground hover:bg-[var(--gold)]/30">Mentor</Badge>
-                )}
-              </Card>
-            </Link>
-          ))}
+          {(data ?? []).map((p: any) => <AlumniCard key={p.id} p={p} />)}
           {!isLoading && data?.length === 0 && (
             <div className="col-span-full py-16 text-center text-sm text-muted-foreground">No alumni match your filters.</div>
           )}
         </div>
       </div>
     </PageShell>
+  );
+}
+
+function AlumniCard({ p }: { p: any }) {
+  const avatar = useAvatarUrl(p.avatar_url);
+  return (
+    <Link to="/alumni/$id" params={{ id: p.id }}>
+      <Card className="group h-full overflow-hidden p-5 transition-all hover:border-primary/50 hover:shadow-md">
+        <div className="flex items-start justify-between">
+          <div className="h-16 w-16 overflow-hidden rounded-full bg-muted">
+            {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" /> : (
+              <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-muted-foreground">
+                {`${p.first_name?.[0] ?? ""}${p.last_name?.[0] ?? ""}`.toUpperCase()}
+              </div>
+            )}
+          </div>
+          <Badge variant="outline" className="border-primary/30 text-primary">TEP #{p.generation}</Badge>
+        </div>
+        <div className="mt-4">
+          <div className="font-display text-lg font-semibold">{p.first_name} {p.last_name}</div>
+          <div className="text-xs text-muted-foreground">{p.program_type} · {p.major}</div>
+          <div className="mt-1 text-xs text-muted-foreground">{[p.city, p.country].filter(Boolean).join(", ")}</div>
+        </div>
+        {p.available_as_mentor && (
+          <Badge className="mt-3 bg-[var(--gold)]/20 text-foreground hover:bg-[var(--gold)]/30">Mentor</Badge>
+        )}
+      </Card>
+    </Link>
   );
 }
 

@@ -26,11 +26,14 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Auto-redirect on session (covers Google OAuth return + post-signup landing)
+  // Auto-redirect on session: incomplete profiles must finish onboarding first.
   useEffect(() => {
-    if (!authLoading && user) {
-      navigate({ to: redirect ?? "/directory", replace: true });
-    }
+    if (authLoading || !user) return;
+    (async () => {
+      const { data } = await supabase.from("profiles").select("profile_complete").eq("id", user.id).maybeSingle();
+      if (!data?.profile_complete) navigate({ to: "/complete-profile", replace: true });
+      else navigate({ to: redirect ?? "/directory", replace: true });
+    })();
   }, [user, authLoading, navigate, redirect]);
 
   const onSubmit = async (e: FormEvent) => {
@@ -40,7 +43,7 @@ function LoginPage() {
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Welcome back");
-    navigate({ to: redirect ?? "/directory", replace: true });
+    // useEffect above handles routing once session is set
   };
 
   return (

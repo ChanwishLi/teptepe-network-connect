@@ -13,15 +13,15 @@ import { Route as StoriesRouteImport } from './routes/stories'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as NewsRouteImport } from './routes/news'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InternshipsRouteImport } from './routes/internships'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DirectoryRouteImport } from './routes/directory'
+import { Route as CompleteProfileRouteImport } from './routes/complete-profile'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoriesIdRouteImport } from './routes/stories.$id'
-import { Route as NewsIdRouteImport } from './routes/news.$id'
+import { Route as OpportunitiesNewRouteImport } from './routes/opportunities.new'
 import { Route as InternshipsNewRouteImport } from './routes/internships.new'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as AlumniIdRouteImport } from './routes/alumni.$id'
@@ -46,11 +46,6 @@ const ProfileRoute = ProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
-const NewsRoute = NewsRouteImport.update({
-  id: '/news',
-  path: '/news',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -71,6 +66,11 @@ const DirectoryRoute = DirectoryRouteImport.update({
   path: '/directory',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompleteProfileRoute = CompleteProfileRouteImport.update({
+  id: '/complete-profile',
+  path: '/complete-profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -86,10 +86,10 @@ const StoriesIdRoute = StoriesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => StoriesRoute,
 } as any)
-const NewsIdRoute = NewsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => NewsRoute,
+const OpportunitiesNewRoute = OpportunitiesNewRouteImport.update({
+  id: '/opportunities/new',
+  path: '/opportunities/new',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const InternshipsNewRoute = InternshipsNewRouteImport.update({
   id: '/new',
@@ -110,11 +110,11 @@ const AlumniIdRoute = AlumniIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/complete-profile': typeof CompleteProfileRoute
   '/directory': typeof DirectoryRoute
   '/events': typeof EventsRouteWithChildren
   '/internships': typeof InternshipsRouteWithChildren
   '/login': typeof LoginRoute
-  '/news': typeof NewsRouteWithChildren
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -122,17 +122,17 @@ export interface FileRoutesByFullPath {
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
   '/internships/new': typeof InternshipsNewRoute
-  '/news/$id': typeof NewsIdRoute
+  '/opportunities/new': typeof OpportunitiesNewRoute
   '/stories/$id': typeof StoriesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/complete-profile': typeof CompleteProfileRoute
   '/directory': typeof DirectoryRoute
   '/events': typeof EventsRouteWithChildren
   '/internships': typeof InternshipsRouteWithChildren
   '/login': typeof LoginRoute
-  '/news': typeof NewsRouteWithChildren
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -140,18 +140,18 @@ export interface FileRoutesByTo {
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
   '/internships/new': typeof InternshipsNewRoute
-  '/news/$id': typeof NewsIdRoute
+  '/opportunities/new': typeof OpportunitiesNewRoute
   '/stories/$id': typeof StoriesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/complete-profile': typeof CompleteProfileRoute
   '/directory': typeof DirectoryRoute
   '/events': typeof EventsRouteWithChildren
   '/internships': typeof InternshipsRouteWithChildren
   '/login': typeof LoginRoute
-  '/news': typeof NewsRouteWithChildren
   '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -159,7 +159,7 @@ export interface FileRoutesById {
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
   '/internships/new': typeof InternshipsNewRoute
-  '/news/$id': typeof NewsIdRoute
+  '/opportunities/new': typeof OpportunitiesNewRoute
   '/stories/$id': typeof StoriesIdRoute
 }
 export interface FileRouteTypes {
@@ -167,11 +167,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/complete-profile'
     | '/directory'
     | '/events'
     | '/internships'
     | '/login'
-    | '/news'
     | '/profile'
     | '/register'
     | '/reset-password'
@@ -179,17 +179,17 @@ export interface FileRouteTypes {
     | '/alumni/$id'
     | '/events/$id'
     | '/internships/new'
-    | '/news/$id'
+    | '/opportunities/new'
     | '/stories/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
+    | '/complete-profile'
     | '/directory'
     | '/events'
     | '/internships'
     | '/login'
-    | '/news'
     | '/profile'
     | '/register'
     | '/reset-password'
@@ -197,17 +197,17 @@ export interface FileRouteTypes {
     | '/alumni/$id'
     | '/events/$id'
     | '/internships/new'
-    | '/news/$id'
+    | '/opportunities/new'
     | '/stories/$id'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/complete-profile'
     | '/directory'
     | '/events'
     | '/internships'
     | '/login'
-    | '/news'
     | '/profile'
     | '/register'
     | '/reset-password'
@@ -215,23 +215,24 @@ export interface FileRouteTypes {
     | '/alumni/$id'
     | '/events/$id'
     | '/internships/new'
-    | '/news/$id'
+    | '/opportunities/new'
     | '/stories/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  CompleteProfileRoute: typeof CompleteProfileRoute
   DirectoryRoute: typeof DirectoryRoute
   EventsRoute: typeof EventsRouteWithChildren
   InternshipsRoute: typeof InternshipsRouteWithChildren
   LoginRoute: typeof LoginRoute
-  NewsRoute: typeof NewsRouteWithChildren
   ProfileRoute: typeof ProfileRoute
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   StoriesRoute: typeof StoriesRouteWithChildren
   AlumniIdRoute: typeof AlumniIdRoute
+  OpportunitiesNewRoute: typeof OpportunitiesNewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -264,13 +265,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/news': {
-      id: '/news'
-      path: '/news'
-      fullPath: '/news'
-      preLoaderRoute: typeof NewsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -299,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DirectoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/complete-profile': {
+      id: '/complete-profile'
+      path: '/complete-profile'
+      fullPath: '/complete-profile'
+      preLoaderRoute: typeof CompleteProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -320,12 +321,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoriesIdRouteImport
       parentRoute: typeof StoriesRoute
     }
-    '/news/$id': {
-      id: '/news/$id'
-      path: '/$id'
-      fullPath: '/news/$id'
-      preLoaderRoute: typeof NewsIdRouteImport
-      parentRoute: typeof NewsRoute
+    '/opportunities/new': {
+      id: '/opportunities/new'
+      path: '/opportunities/new'
+      fullPath: '/opportunities/new'
+      preLoaderRoute: typeof OpportunitiesNewRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/internships/new': {
       id: '/internships/new'
@@ -374,16 +375,6 @@ const InternshipsRouteWithChildren = InternshipsRoute._addFileChildren(
   InternshipsRouteChildren,
 )
 
-interface NewsRouteChildren {
-  NewsIdRoute: typeof NewsIdRoute
-}
-
-const NewsRouteChildren: NewsRouteChildren = {
-  NewsIdRoute: NewsIdRoute,
-}
-
-const NewsRouteWithChildren = NewsRoute._addFileChildren(NewsRouteChildren)
-
 interface StoriesRouteChildren {
   StoriesIdRoute: typeof StoriesIdRoute
 }
@@ -398,16 +389,17 @@ const StoriesRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  CompleteProfileRoute: CompleteProfileRoute,
   DirectoryRoute: DirectoryRoute,
   EventsRoute: EventsRouteWithChildren,
   InternshipsRoute: InternshipsRouteWithChildren,
   LoginRoute: LoginRoute,
-  NewsRoute: NewsRouteWithChildren,
   ProfileRoute: ProfileRoute,
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   StoriesRoute: StoriesRouteWithChildren,
   AlumniIdRoute: AlumniIdRoute,
+  OpportunitiesNewRoute: OpportunitiesNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
