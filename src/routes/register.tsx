@@ -76,7 +76,7 @@ function RegisterPage() {
     const { data, error } = await supabase.auth.signUp({
       email: f.email, password: f.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/directory`,
         data: {
           first_name: f.first_name, last_name: f.last_name, preferred_name: f.preferred_name,
           gender: f.gender, date_of_birth: f.date_of_birth, nationality: f.nationality,
@@ -88,20 +88,30 @@ function RegisterPage() {
         },
       },
     });
-    if (error) { setLoading(false); return toast.error(error.message); }
+    if (error) {
+      setLoading(false);
+      if (/already|registered|exists/i.test(error.message)) {
+        return toast.error("An account with that email already exists. Please sign in instead.");
+      }
+      return toast.error(error.message);
+    }
 
     if (data.user) {
-      const ext = (avatarFile.name.split(".").pop() || "jpg").toLowerCase();
-      const path = `${data.user.id}/avatar.${ext}`;
-      const up = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true, contentType: avatarFile.type });
-      if (!up.error) {
-        await supabase.from("profiles").update({ avatar_url: path }).eq("id", data.user.id);
+      try {
+        const ext = (avatarFile.name.split(".").pop() || "jpg").toLowerCase();
+        const path = `${data.user.id}/avatar.${ext}`;
+        const up = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true, contentType: avatarFile.type });
+        const patch: any = { profile_complete: true };
+        if (!up.error) patch.avatar_url = path;
+        await supabase.from("profiles").update(patch).eq("id", data.user.id);
+        await supabase.from("consent_records").insert({
+          user_id: data.user.id, consent_version: CONSENT_VERSION,
+          data_collection: f.c_data, directory_participation: f.c_directory,
+          communications: f.c_comms, mentorship_matching: f.c_mentor,
+        });
+      } catch (err: any) {
+        console.error("Post-signup save failed", err);
       }
-      await supabase.from("consent_records").insert({
-        user_id: data.user.id, consent_version: CONSENT_VERSION,
-        data_collection: f.c_data, directory_participation: f.c_directory,
-        communications: f.c_comms, mentorship_matching: f.c_mentor,
-      });
     }
     setLoading(false);
     toast.success("Account created. Awaiting admin approval.");
@@ -109,8 +119,8 @@ function RegisterPage() {
   };
 
   const googleSignIn = async () => {
-    // Land on /profile so users complete their profile before being approved.
-    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/profile?complete=1` });
+    // Land on /complete-profile so Google users finish onboarding before entering the directory.
+    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: `${window.location.origin}/complete-profile` });
     if (res.error) toast.error(res.error.message || "Google sign-in failed");
   };
 
