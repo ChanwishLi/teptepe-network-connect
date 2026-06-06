@@ -331,48 +331,6 @@ export type Database = {
         }
         Relationships: []
       }
-      news_posts: {
-        Row: {
-          content: string
-          created_at: string
-          created_by: string | null
-          id: string
-          image_url: string | null
-          is_published: boolean
-          published_at: string | null
-          slug: string | null
-          summary: string | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          image_url?: string | null
-          is_published?: boolean
-          published_at?: string | null
-          slug?: string | null
-          summary?: string | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          image_url?: string | null
-          is_published?: boolean
-          published_at?: string | null
-          slug?: string | null
-          summary?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           address: string | null
@@ -403,6 +361,7 @@ export type Database = {
           phone: string | null
           preferred_name: string | null
           professional_summary: string | null
+          profile_complete: boolean
           program_type: Database["public"]["Enums"]["program_type"] | null
           province: string | null
           research_interests: string[]
@@ -445,6 +404,7 @@ export type Database = {
           phone?: string | null
           preferred_name?: string | null
           professional_summary?: string | null
+          profile_complete?: boolean
           program_type?: Database["public"]["Enums"]["program_type"] | null
           province?: string | null
           research_interests?: string[]
@@ -487,6 +447,7 @@ export type Database = {
           phone?: string | null
           preferred_name?: string | null
           professional_summary?: string | null
+          profile_complete?: boolean
           program_type?: Database["public"]["Enums"]["program_type"] | null
           province?: string | null
           research_interests?: string[]
@@ -645,7 +606,6 @@ export type Database = {
           certifications: string[] | null
           city: string | null
           country: string | null
-          created_at: string | null
           email: string | null
           expertise: string[] | null
           facebook_url: string | null
@@ -654,6 +614,7 @@ export type Database = {
           graduation_year: number | null
           id: string | null
           instagram_url: string | null
+          is_approved: boolean | null
           is_featured: boolean | null
           last_name: string | null
           linkedin_url: string | null
@@ -663,6 +624,7 @@ export type Database = {
           phone: string | null
           preferred_name: string | null
           professional_summary: string | null
+          profile_complete: boolean | null
           program_type: Database["public"]["Enums"]["program_type"] | null
           research_interests: string[] | null
           skills: string[] | null
