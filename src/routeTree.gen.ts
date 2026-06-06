@@ -21,6 +21,7 @@ import { Route as CompleteProfileRouteImport } from './routes/complete-profile'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoriesIdRouteImport } from './routes/stories.$id'
+import { Route as OpportunitiesNewRouteImport } from './routes/opportunities.new'
 import { Route as InternshipsNewRouteImport } from './routes/internships.new'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as AlumniIdRouteImport } from './routes/alumni.$id'
@@ -85,6 +86,11 @@ const StoriesIdRoute = StoriesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => StoriesRoute,
 } as any)
+const OpportunitiesNewRoute = OpportunitiesNewRouteImport.update({
+  id: '/opportunities/new',
+  path: '/opportunities/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InternshipsNewRoute = InternshipsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
   '/internships/new': typeof InternshipsNewRoute
+  '/opportunities/new': typeof OpportunitiesNewRoute
   '/stories/$id': typeof StoriesIdRoute
 }
 export interface FileRoutesByTo {
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
   '/internships/new': typeof InternshipsNewRoute
+  '/opportunities/new': typeof OpportunitiesNewRoute
   '/stories/$id': typeof StoriesIdRoute
 }
 export interface FileRoutesById {
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
   '/internships/new': typeof InternshipsNewRoute
+  '/opportunities/new': typeof OpportunitiesNewRoute
   '/stories/$id': typeof StoriesIdRoute
 }
 export interface FileRouteTypes {
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/alumni/$id'
     | '/events/$id'
     | '/internships/new'
+    | '/opportunities/new'
     | '/stories/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/alumni/$id'
     | '/events/$id'
     | '/internships/new'
+    | '/opportunities/new'
     | '/stories/$id'
   id:
     | '__root__'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/alumni/$id'
     | '/events/$id'
     | '/internships/new'
+    | '/opportunities/new'
     | '/stories/$id'
   fileRoutesById: FileRoutesById
 }
@@ -220,6 +232,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   StoriesRoute: typeof StoriesRouteWithChildren
   AlumniIdRoute: typeof AlumniIdRoute
+  OpportunitiesNewRoute: typeof OpportunitiesNewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -308,6 +321,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoriesIdRouteImport
       parentRoute: typeof StoriesRoute
     }
+    '/opportunities/new': {
+      id: '/opportunities/new'
+      path: '/opportunities/new'
+      fullPath: '/opportunities/new'
+      preLoaderRoute: typeof OpportunitiesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/internships/new': {
       id: '/internships/new'
       path: '/new'
@@ -379,6 +399,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   StoriesRoute: StoriesRouteWithChildren,
   AlumniIdRoute: AlumniIdRoute,
+  OpportunitiesNewRoute: OpportunitiesNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
