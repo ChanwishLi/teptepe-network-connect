@@ -17,6 +17,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as InternshipsRouteImport } from './routes/internships'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DirectoryRouteImport } from './routes/directory'
+import { Route as CompleteProfileRouteImport } from './routes/complete-profile'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoriesIdRouteImport } from './routes/stories.$id'
@@ -64,6 +65,11 @@ const DirectoryRoute = DirectoryRouteImport.update({
   path: '/directory',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompleteProfileRoute = CompleteProfileRouteImport.update({
+  id: '/complete-profile',
+  path: '/complete-profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -98,6 +104,7 @@ const AlumniIdRoute = AlumniIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/complete-profile': typeof CompleteProfileRoute
   '/directory': typeof DirectoryRoute
   '/events': typeof EventsRouteWithChildren
   '/internships': typeof InternshipsRouteWithChildren
@@ -114,6 +121,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/complete-profile': typeof CompleteProfileRoute
   '/directory': typeof DirectoryRoute
   '/events': typeof EventsRouteWithChildren
   '/internships': typeof InternshipsRouteWithChildren
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/complete-profile': typeof CompleteProfileRoute
   '/directory': typeof DirectoryRoute
   '/events': typeof EventsRouteWithChildren
   '/internships': typeof InternshipsRouteWithChildren
@@ -149,6 +158,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/complete-profile'
     | '/directory'
     | '/events'
     | '/internships'
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/complete-profile'
     | '/directory'
     | '/events'
     | '/internships'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/complete-profile'
     | '/directory'
     | '/events'
     | '/internships'
@@ -198,6 +210,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  CompleteProfileRoute: typeof CompleteProfileRoute
   DirectoryRoute: typeof DirectoryRoute
   EventsRoute: typeof EventsRouteWithChildren
   InternshipsRoute: typeof InternshipsRouteWithChildren
@@ -265,6 +278,13 @@ declare module '@tanstack/react-router' {
       path: '/directory'
       fullPath: '/directory'
       preLoaderRoute: typeof DirectoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/complete-profile': {
+      id: '/complete-profile'
+      path: '/complete-profile'
+      fullPath: '/complete-profile'
+      preLoaderRoute: typeof CompleteProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -349,6 +369,7 @@ const StoriesRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  CompleteProfileRoute: CompleteProfileRoute,
   DirectoryRoute: DirectoryRoute,
   EventsRoute: EventsRouteWithChildren,
   InternshipsRoute: InternshipsRouteWithChildren,
@@ -362,3 +383,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
