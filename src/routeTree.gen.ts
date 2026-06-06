@@ -20,7 +20,6 @@ import { Route as DirectoryRouteImport } from './routes/directory'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoriesIdRouteImport } from './routes/stories.$id'
-import { Route as NewsIdRouteImport } from './routes/news.$id'
 import { Route as InternshipsNewRouteImport } from './routes/internships.new'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as AlumniIdRouteImport } from './routes/alumni.$id'
@@ -80,11 +79,6 @@ const StoriesIdRoute = StoriesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => StoriesRoute,
 } as any)
-const NewsIdRoute = NewsIdRouteImport.update({
-  id: '/news/$id',
-  path: '/news/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const InternshipsNewRoute = InternshipsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -115,7 +109,6 @@ export interface FileRoutesByFullPath {
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
   '/internships/new': typeof InternshipsNewRoute
-  '/news/$id': typeof NewsIdRoute
   '/stories/$id': typeof StoriesIdRoute
 }
 export interface FileRoutesByTo {
@@ -132,7 +125,6 @@ export interface FileRoutesByTo {
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
   '/internships/new': typeof InternshipsNewRoute
-  '/news/$id': typeof NewsIdRoute
   '/stories/$id': typeof StoriesIdRoute
 }
 export interface FileRoutesById {
@@ -150,7 +142,6 @@ export interface FileRoutesById {
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
   '/internships/new': typeof InternshipsNewRoute
-  '/news/$id': typeof NewsIdRoute
   '/stories/$id': typeof StoriesIdRoute
 }
 export interface FileRouteTypes {
@@ -169,7 +160,6 @@ export interface FileRouteTypes {
     | '/alumni/$id'
     | '/events/$id'
     | '/internships/new'
-    | '/news/$id'
     | '/stories/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -186,7 +176,6 @@ export interface FileRouteTypes {
     | '/alumni/$id'
     | '/events/$id'
     | '/internships/new'
-    | '/news/$id'
     | '/stories/$id'
   id:
     | '__root__'
@@ -203,7 +192,6 @@ export interface FileRouteTypes {
     | '/alumni/$id'
     | '/events/$id'
     | '/internships/new'
-    | '/news/$id'
     | '/stories/$id'
   fileRoutesById: FileRoutesById
 }
@@ -219,7 +207,6 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   StoriesRoute: typeof StoriesRouteWithChildren
   AlumniIdRoute: typeof AlumniIdRoute
-  NewsIdRoute: typeof NewsIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -301,13 +288,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoriesIdRouteImport
       parentRoute: typeof StoriesRoute
     }
-    '/news/$id': {
-      id: '/news/$id'
-      path: '/news/$id'
-      fullPath: '/news/$id'
-      preLoaderRoute: typeof NewsIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/internships/new': {
       id: '/internships/new'
       path: '/new'
@@ -378,8 +358,17 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   StoriesRoute: StoriesRouteWithChildren,
   AlumniIdRoute: AlumniIdRoute,
-  NewsIdRoute: NewsIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
