@@ -282,30 +282,8 @@ function EventsAdmin() {
   );
 }
 
-function NewsAdmin() {
-  return (
-    <CrudSection
-      title="News"
-      table="news_posts"
-      defaultRow={{ title: "", slug: "", summary: "", content: "", image_url: "", is_published: false, published_at: "" }}
-      fields={[
-        { name: "title", label: "Title" },
-        { name: "slug", label: "URL slug (e.g. new-partnership)" },
-        { name: "summary", label: "Summary (preview)", type: "textarea", rows: 2 },
-        { name: "content", label: "Full blog content", type: "textarea", rows: 10 },
-        { name: "image_url", label: "Cover image URL", type: "url" },
-        { name: "published_at", label: "Publish date", type: "date" },
-        { name: "is_published", label: "Published", type: "switch" },
-      ]}
-      listColumns={(r) => (
-        <div>
-          <div className="font-medium">{r.title} {r.is_published ? <Badge variant="outline" className="ml-2">Live</Badge> : <Badge variant="secondary" className="ml-2">Draft</Badge>}</div>
-          <div className="text-xs text-muted-foreground line-clamp-1">{r.summary ?? ""}</div>
-        </div>
-      )}
-    />
-  );
-}
+
+
 
 
 function StoriesAdmin() {
