@@ -172,11 +172,14 @@ function ProfilePage() {
               {uploadAvatar.isPending ? "Uploading…" : "Change photo"}
             </Button>
           </div>
-          <div className="flex-1 min-w-[16rem]">
+          <div className="min-w-[16rem] flex-1">
             <h1 className="font-display text-4xl font-semibold">{profile.first_name} {profile.last_name}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {profile.program_type ? `${profile.program_type} #${profile.generation}` : "Profile incomplete"} · {user.email}
             </p>
+            <div className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Users className="h-3.5 w-3.5" /> {connCount ?? 0} {connCount === 1 ? "connection" : "connections"}
+            </div>
             {(!profile.program_type || !profile.generation || !profile.major) && (
               <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
                 <strong>Complete your profile.</strong> Please fill in your program, generation, and major below so you can be approved and appear in the directory.
