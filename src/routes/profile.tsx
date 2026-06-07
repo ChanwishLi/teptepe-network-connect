@@ -443,3 +443,124 @@ function parseCsv(v: any): string[] {
   if (typeof v !== "string") return [];
   return v.split(",").map((s) => s.trim()).filter(Boolean);
 }
+
+function ConnectionsPanel() {
+  const { user } = useAuth();
+  const me = user?.id;
+  const { data: rows = [], isLoading } = useMyConnections();
+  const otherIds = Array.from(new Set(rows.map((r) => (r.requester_id === me ? r.addressee_id : r.requester_id))));
+
+  const { data: peers = [] } = useQuery({
+    enabled: otherIds.length > 0,
+    queryKey: ["connection-peers", otherIds.sort().join(",")],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles_public" as any)
+        .select("id, first_name, last_name, generation, program_type, major, avatar_url")
+        .in("id", otherIds);
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+  const peerMap = new Map(peers.map((p) => [p.id, p]));
+
+  const incoming = rows.filter((r) => r.status === "pending" && r.addressee_id === me);
+  const outgoing = rows.filter((r) => r.status === "pending" && r.requester_id === me);
+  const accepted = rows.filter((r) => r.status === "accepted");
+
+  return (
+    <div className="space-y-6">
+      <ConnList
+        title="Pending requests"
+        icon={<Clock className="h-4 w-4" />}
+        empty="No incoming requests."
+        rows={incoming}
+        peerMap={peerMap}
+        meId={me!}
+        mode="incoming"
+      />
+      <ConnList
+        title="Sent requests"
+        icon={<Clock className="h-4 w-4" />}
+        empty="You haven't sent any requests."
+        rows={outgoing}
+        peerMap={peerMap}
+        meId={me!}
+        mode="outgoing"
+      />
+      <ConnList
+        title="My connections"
+        icon={<UserCheck className="h-4 w-4" />}
+        empty={isLoading ? "Loading…" : "No connections yet — browse the directory to start connecting."}
+        rows={accepted}
+        peerMap={peerMap}
+        meId={me!}
+        mode="accepted"
+      />
+    </div>
+  );
+}
+
+function ConnList({
+  title, icon, empty, rows, peerMap, meId, mode,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  empty: string;
+  rows: Array<{ id: string; requester_id: string; addressee_id: string }>;
+  peerMap: Map<string, any>;
+  meId: string;
+  mode: "incoming" | "outgoing" | "accepted";
+}) {
+  return (
+    <Card className="p-5">
+      <div className="mb-3 flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+        {icon}<span>{title} ({rows.length})</span>
+      </div>
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{empty}</p>
+      ) : (
+        <div className="space-y-2">
+          {rows.map((r) => {
+            const otherId = r.requester_id === meId ? r.addressee_id : r.requester_id;
+            const peer = peerMap.get(otherId);
+            return <ConnRow key={r.id} rowId={r.id} otherId={otherId} peer={peer} mode={mode} />;
+          })}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function ConnRow({ rowId, otherId, peer, mode }: { rowId: string; otherId: string; peer: any; mode: "incoming" | "outgoing" | "accepted" }) {
+  const avatar = useAvatarUrl(peer?.avatar_url);
+  const { accept, remove } = useConnectionActions(otherId);
+  const name = peer ? `${peer.first_name} ${peer.last_name}` : "Alumni";
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-md border p-3">
+      <Link to="/alumni/$id" params={{ id: otherId }} className="flex items-center gap-3 hover:underline">
+        <div className="h-10 w-10 overflow-hidden rounded-full bg-muted">
+          {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" /> : null}
+        </div>
+        <div>
+          <div className="text-sm font-medium">{name}</div>
+          {peer && <div className="text-xs text-muted-foreground">{peer.program_type} #{peer.generation} · {peer.major}</div>}
+        </div>
+      </Link>
+      <div className="flex gap-2">
+        {mode === "incoming" && (
+          <>
+            <Button size="sm" onClick={() => accept.mutate(rowId, { onSuccess: () => toast.success("Connected"), onError: (e: any) => toast.error(e.message) })} disabled={accept.isPending}>Accept</Button>
+            <Button size="sm" variant="outline" onClick={() => remove.mutate(rowId, { onSuccess: () => toast.success("Rejected"), onError: (e: any) => toast.error(e.message) })} disabled={remove.isPending}>Reject</Button>
+          </>
+        )}
+        {mode === "outgoing" && (
+          <Button size="sm" variant="outline" onClick={() => remove.mutate(rowId, { onSuccess: () => toast.success("Request cancelled"), onError: (e: any) => toast.error(e.message) })} disabled={remove.isPending}>Cancel</Button>
+        )}
+        {mode === "accepted" && (
+          <Button size="sm" variant="ghost" onClick={() => remove.mutate(rowId, { onSuccess: () => toast.success("Connection removed"), onError: (e: any) => toast.error(e.message) })} disabled={remove.isPending}>Remove</Button>
+        )}
+      </div>
+    </div>
+  );
+}
