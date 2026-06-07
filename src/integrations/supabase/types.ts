@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      connections: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: Database["public"]["Enums"]["connection_status"]
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: Database["public"]["Enums"]["connection_status"]
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: Database["public"]["Enums"]["connection_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       consent_records: {
         Row: {
           communications: boolean
@@ -633,6 +660,7 @@ export type Database = {
       }
     }
     Functions: {
+      connection_count: { Args: { _user_id: string }; Returns: number }
       current_generation_status: {
         Args: { gen: number }
         Returns: Database["public"]["Enums"]["generation_status"]
@@ -647,6 +675,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "alumni"
+      connection_status: "pending" | "accepted"
       education_level:
         | "high_school"
         | "bachelor"
@@ -791,6 +820,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "alumni"],
+      connection_status: ["pending", "accepted"],
       education_level: [
         "high_school",
         "bachelor",
