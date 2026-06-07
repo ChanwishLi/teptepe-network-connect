@@ -5,8 +5,12 @@ import { PageShell } from "@/components/site-shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Mail, Linkedin, Globe, Facebook, Instagram, MapPin } from "lucide-react";
+import { Mail, Linkedin, Globe, Facebook, Instagram, MapPin, UserPlus, UserCheck, Clock, X, Users } from "lucide-react";
+import { toast } from "sonner";
 import { generationStatus } from "@/lib/constants";
+import { useAvatarUrl } from "@/lib/avatar";
+import { useConnectionState, useConnectionActions, useConnectionCount } from "@/lib/connections";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/alumni/$id")({
   component: AlumniDetail,
@@ -15,6 +19,7 @@ export const Route = createFileRoute("/alumni/$id")({
 
 function AlumniDetail() {
   const { id } = Route.useParams();
+  const { user } = useAuth();
   const { data, isLoading } = useQuery({
     queryKey: ["alumni", id],
     queryFn: async () => {
@@ -28,11 +33,18 @@ function AlumniDetail() {
     },
   });
 
+  const avatar = useAvatarUrl(data?.profile?.avatar_url);
+  const { data: connState } = useConnectionState(id);
+  const { data: connCount } = useConnectionCount(id);
+  const { send, accept, remove } = useConnectionActions(id);
+
   if (isLoading) return <PageShell><div className="py-20 text-center text-muted-foreground">Loading…</div></PageShell>;
   const p = data?.profile;
   if (!p) return <PageShell><div className="py-20 text-center">Not found.</div></PageShell>;
 
   const cur = data!.emp.find((e: any) => e.is_current);
+  const isConnected = connState?.kind === "accepted";
+  const canSeeContact = isConnected || user?.id === id;
 
   return (
     <PageShell>
@@ -44,23 +56,48 @@ function AlumniDetail() {
             <div className="-mt-12 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex items-end gap-4">
                 <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-background bg-muted">
-                  {p.avatar_url ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" /> : null}
+                  {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" /> : (
+                    <div className="flex h-full w-full items-center justify-center text-xl font-semibold text-muted-foreground">
+                      {`${p.first_name?.[0] ?? ""}${p.last_name?.[0] ?? ""}`.toUpperCase()}
+                    </div>
+                  )}
                 </div>
                 <div className="pb-2">
                   <h1 className="font-display text-3xl font-bold">{p.first_name} {p.last_name}</h1>
                   <div className="text-sm text-muted-foreground">{cur ? `${cur.position} · ${cur.company}` : p.program_type}</div>
                   {p.city || p.country ? <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3" />{[p.city, p.country].filter(Boolean).join(", ")}</div> : null}
+                  <div className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <Users className="h-3 w-3" /> {connCount ?? 0} {connCount === 1 ? "connection" : "connections"}
+                  </div>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className="border-primary/30 text-primary">TEP #{p.generation}</Badge>
-                <Badge variant="secondary">{generationStatus(p.generation)}</Badge>
-                {data?.mentor?.available_as_mentor && <Badge className="bg-[var(--gold)]/30 text-foreground hover:bg-[var(--gold)]/40">Mentor</Badge>}
+              <div className="flex flex-col items-end gap-2">
+                <div className="flex flex-wrap justify-end gap-2">
+                  <Badge variant="outline" className="border-primary/30 text-primary">TEP #{p.generation}</Badge>
+                  <Badge variant="secondary">{generationStatus(p.generation)}</Badge>
+                  {data?.mentor?.available_as_mentor && <Badge className="bg-[var(--gold)]/30 text-foreground hover:bg-[var(--gold)]/40">Mentor</Badge>}
+                </div>
+                <ConnectControls
+                  state={connState}
+                  pending={send.isPending || accept.isPending || remove.isPending}
+                  onSend={() => send.mutate(undefined, {
+                    onSuccess: () => toast.success("Connection request sent"),
+                    onError: (e: any) => toast.error(e.message),
+                  })}
+                  onAccept={(rid) => accept.mutate(rid, {
+                    onSuccess: () => toast.success("Connection accepted"),
+                    onError: (e: any) => toast.error(e.message),
+                  })}
+                  onRemove={(rid, label) => remove.mutate(rid, {
+                    onSuccess: () => toast.success(label),
+                    onError: (e: any) => toast.error(e.message),
+                  })}
+                />
               </div>
             </div>
 
             <div className="mt-8 grid gap-8 lg:grid-cols-3">
-              <div className="lg:col-span-2 space-y-6">
+              <div className="space-y-6 lg:col-span-2">
                 {p.professional_summary && <Section title="About"><p className="text-sm text-muted-foreground">{p.professional_summary}</p></Section>}
 
                 <Section title="Program">
@@ -72,7 +109,7 @@ function AlumniDetail() {
 
                 <Section title="Education">
                   {data!.edu.length === 0 ? <Empty /> : data!.edu.map((e: any) => (
-                    <div key={e.id} className="border-l-2 border-primary/30 pl-4 py-1">
+                    <div key={e.id} className="border-l-2 border-primary/30 py-1 pl-4">
                       <div className="font-medium">{e.level === "phd" ? "PhD" : e.level.charAt(0).toUpperCase() + e.level.slice(1)} · {e.institution}</div>
                       <div className="text-xs text-muted-foreground">{[e.major, e.country, e.graduation_year].filter(Boolean).join(" · ")}</div>
                     </div>
@@ -81,7 +118,7 @@ function AlumniDetail() {
 
                 <Section title="Employment">
                   {data!.emp.length === 0 ? <Empty /> : data!.emp.map((e: any) => (
-                    <div key={e.id} className="border-l-2 border-primary/30 pl-4 py-1">
+                    <div key={e.id} className="border-l-2 border-primary/30 py-1 pl-4">
                       <div className="font-medium">{e.position} {e.is_current && <span className="ml-2 text-xs text-primary">Current</span>}</div>
                       <div className="text-xs text-muted-foreground">{[e.company, e.city, e.country, `${e.start_year}${e.end_year ? `–${e.end_year}` : "–present"}`].filter(Boolean).join(" · ")}</div>
                     </div>
@@ -100,14 +137,21 @@ function AlumniDetail() {
 
               <div className="space-y-4">
                 <Card className="p-5">
-                  <h3 className="text-xs uppercase tracking-wider text-muted-foreground">Connect</h3>
-                  <div className="mt-3 space-y-2">
-                    {p.show_email && p.email && <ContactLink href={`mailto:${p.email}`} icon={Mail}>{p.email}</ContactLink>}
-                    {p.show_linkedin && p.linkedin_url && <ContactLink href={p.linkedin_url} icon={Linkedin}>LinkedIn</ContactLink>}
-                    {p.show_website && p.personal_website && <ContactLink href={p.personal_website} icon={Globe}>Website</ContactLink>}
-                    {p.show_facebook && p.facebook_url && <ContactLink href={p.facebook_url} icon={Facebook}>Facebook</ContactLink>}
-                    {p.show_instagram && p.instagram_url && <ContactLink href={p.instagram_url} icon={Instagram}>Instagram</ContactLink>}
-                  </div>
+                  <h3 className="text-xs uppercase tracking-wider text-muted-foreground">Contact</h3>
+                  {!canSeeContact ? (
+                    <p className="mt-3 text-sm text-muted-foreground">Connect with this alumni to view their public contact info.</p>
+                  ) : (
+                    <div className="mt-3 space-y-2">
+                      {p.show_email && p.email && <ContactLink href={`mailto:${p.email}`} icon={Mail}>{p.email}</ContactLink>}
+                      {p.show_linkedin && p.linkedin_url && <ContactLink href={p.linkedin_url} icon={Linkedin}>LinkedIn</ContactLink>}
+                      {p.show_website && p.personal_website && <ContactLink href={p.personal_website} icon={Globe}>Website</ContactLink>}
+                      {p.show_facebook && p.facebook_url && <ContactLink href={p.facebook_url} icon={Facebook}>Facebook</ContactLink>}
+                      {p.show_instagram && p.instagram_url && <ContactLink href={p.instagram_url} icon={Instagram}>Instagram</ContactLink>}
+                      {!p.show_email && !p.show_linkedin && !p.show_website && !p.show_facebook && !p.show_instagram && (
+                        <p className="text-xs text-muted-foreground">This alumni has not shared any contact details.</p>
+                      )}
+                    </div>
+                  )}
                 </Card>
 
                 {data?.mentor?.available_as_mentor && (
@@ -128,6 +172,55 @@ function AlumniDetail() {
         </Card>
       </div>
     </PageShell>
+  );
+}
+
+function ConnectControls({
+  state, pending, onSend, onAccept, onRemove,
+}: {
+  state: ReturnType<typeof useConnectionState>["data"];
+  pending: boolean;
+  onSend: () => void;
+  onAccept: (rowId: string) => void;
+  onRemove: (rowId: string, label: string) => void;
+}) {
+  if (!state || state.kind === "self") return null;
+  if (state.kind === "none") {
+    return (
+      <Button size="sm" onClick={onSend} disabled={pending}>
+        <UserPlus className="mr-1.5 h-4 w-4" /> Connect
+      </Button>
+    );
+  }
+  if (state.kind === "outgoing") {
+    return (
+      <div className="flex gap-2">
+        <Button size="sm" variant="outline" disabled><Clock className="mr-1.5 h-4 w-4" /> Request sent</Button>
+        <Button size="sm" variant="ghost" disabled={pending} onClick={() => onRemove(state.row.id, "Request cancelled")}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
+  if (state.kind === "incoming") {
+    return (
+      <div className="flex gap-2">
+        <Button size="sm" disabled={pending} onClick={() => onAccept(state.row.id)}>
+          <UserCheck className="mr-1.5 h-4 w-4" /> Accept
+        </Button>
+        <Button size="sm" variant="outline" disabled={pending} onClick={() => onRemove(state.row.id, "Request rejected")}>
+          Reject
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex gap-2">
+      <Button size="sm" variant="outline" disabled><UserCheck className="mr-1.5 h-4 w-4" /> Connected</Button>
+      <Button size="sm" variant="ghost" disabled={pending} onClick={() => onRemove(state.row.id, "Connection removed")}>
+        Remove
+      </Button>
+    </div>
   );
 }
 

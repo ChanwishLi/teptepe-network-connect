@@ -24,37 +24,48 @@ function SiteHeaderInner() {
     router.navigate({ to: "/" });
   };
 
-  const links: Array<{ to: string; label: string }> = user ? [
-    { to: "/directory", label: "Directory" },
-    { to: "/internships", label: "Opportunities" },
-    { to: "/events", label: "Events" },
-    { to: "/stories", label: "Stories" },
-  ] : [];
+  const links: Array<{ to: string; label: string }> = user
+    ? [
+        { to: "/directory", label: "Directory" },
+        { to: "/internships", label: "Opportunities" },
+        { to: "/events", label: "Events" },
+        { to: "/stories", label: "Stories" },
+      ]
+    : [
+        { to: "/", label: "Home" },
+      ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-8">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logoAsset.url} alt="TEP-TEPE" className="h-10 w-auto" />
-        </Link>
+      <div className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 lg:px-8">
+        {/* Left: logo */}
+        <div className="flex items-center">
+          <Link to="/" className="flex items-center gap-2">
+            <img src={logoAsset.url} alt="TEP-TEPE" className="h-10 w-auto" />
+          </Link>
+        </div>
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        {/* Center: nav */}
+        <nav className="hidden items-center justify-center gap-1 lg:flex">
           {links.map((l) => (
             <Link
               key={l.to}
               to={l.to}
               preload="intent"
-              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              activeProps={{ className: "text-foreground bg-muted" }}
+              className="rounded-md border border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              activeProps={{ className: "text-foreground bg-muted border-border" }}
+              activeOptions={{ exact: l.to === "/" }}
             >
               {l.label}
             </Link>
           ))}
         </nav>
 
-        {/* Reserve space to avoid layout jitter while auth resolves */}
-        <div className="hidden items-center gap-2 lg:flex min-w-[180px] justify-end">
-          {loading ? null : user ? (
+        {/* Right: auth actions (reserve width to avoid jitter) */}
+        <div className="hidden items-center justify-end gap-2 lg:flex">
+          {loading ? (
+            <div className="h-9 w-40" />
+          ) : user ? (
             <>
               {isAdmin && (
                 <Button asChild variant="ghost" size="sm">
@@ -80,20 +91,20 @@ function SiteHeaderInner() {
           )}
         </div>
 
-        <button className="lg:hidden p-2" onClick={() => setOpen((v) => !v)} aria-label="Toggle menu">
+        <button className="justify-self-end p-2 lg:hidden" onClick={() => setOpen((v) => !v)} aria-label="Toggle menu">
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
       {open && (
         <div className="border-t border-border bg-background lg:hidden">
-          <div className="mx-auto max-w-7xl px-4 py-3 flex flex-col gap-1">
+          <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
             {links.map((l) => (
               <Link key={l.to} to={l.to} className="rounded-md px-3 py-2 text-sm hover:bg-muted" onClick={() => setOpen(false)}>
                 {l.label}
               </Link>
             ))}
-            <div className="border-t border-border my-2" />
+            <div className="my-2 border-t border-border" />
             {user ? (
               <>
                 {isAdmin && (

@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
@@ -15,8 +15,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Users, UserCheck, Clock } from "lucide-react";
 import { toast } from "sonner";
-import { generationStatus } from "@/lib/constants";
+import { useAvatarUrl } from "@/lib/avatar";
+import { useMyConnections, useConnectionActions, useConnectionCount } from "@/lib/connections";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "My Profile — TEP-TEPE Alumni Network" }] }),
@@ -74,23 +76,13 @@ function ProfilePage() {
 
   const [form, setForm] = useState<any>({});
   const [ment, setMent] = useState<any>({});
-  const [avatarSignedUrl, setAvatarSignedUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { if (profile) setForm(profile); }, [profile]);
   useEffect(() => { if (mentorship) setMent(mentorship); }, [mentorship]);
 
-  // Generate signed URL for avatar (bucket is private)
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      if (!profile?.avatar_url) { setAvatarSignedUrl(null); return; }
-      const { data } = await supabase.storage.from("avatars").createSignedUrl(profile.avatar_url, 60 * 60);
-      if (!cancelled) setAvatarSignedUrl(data?.signedUrl ?? null);
-    }
-    load();
-    return () => { cancelled = true; };
-  }, [profile?.avatar_url]);
+  const avatarUrl = useAvatarUrl(profile?.avatar_url);
+  const { data: connCount } = useConnectionCount(user?.id);
 
   const uploadAvatar = useMutation({
     mutationFn: async (file: File) => {
@@ -166,7 +158,7 @@ function ProfilePage() {
         <div className="flex flex-wrap items-start gap-6">
           <div className="flex flex-col items-center gap-2">
             <Avatar className="h-24 w-24">
-              {avatarSignedUrl ? <AvatarImage src={avatarSignedUrl} alt="" /> : null}
+              {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
               <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
             </Avatar>
             <input
@@ -180,11 +172,14 @@ function ProfilePage() {
               {uploadAvatar.isPending ? "Uploading…" : "Change photo"}
             </Button>
           </div>
-          <div className="flex-1 min-w-[16rem]">
+          <div className="min-w-[16rem] flex-1">
             <h1 className="font-display text-4xl font-semibold">{profile.first_name} {profile.last_name}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {profile.program_type ? `${profile.program_type} #${profile.generation}` : "Profile incomplete"} · {user.email}
             </p>
+            <div className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Users className="h-3.5 w-3.5" /> {connCount ?? 0} {connCount === 1 ? "connection" : "connections"}
+            </div>
             {(!profile.program_type || !profile.generation || !profile.major) && (
               <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
                 <strong>Complete your profile.</strong> Please fill in your program, generation, and major below so you can be approved and appear in the directory.
@@ -199,13 +194,18 @@ function ProfilePage() {
         </div>
 
         <Tabs defaultValue="info" className="mt-8">
-          <TabsList className="flex-wrap h-auto">
+          <TabsList className="h-auto flex-wrap">
             <TabsTrigger value="info">Personal</TabsTrigger>
             <TabsTrigger value="prof">Professional</TabsTrigger>
             <TabsTrigger value="edu">Education</TabsTrigger>
             <TabsTrigger value="vis">Visibility</TabsTrigger>
             <TabsTrigger value="mentor">Mentor</TabsTrigger>
+            <TabsTrigger value="conn">Connections</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="conn">
+            <ConnectionsPanel />
+          </TabsContent>
 
           <TabsContent value="info">
             <Card className="p-6">
@@ -442,4 +442,125 @@ function parseCsv(v: any): string[] {
   if (Array.isArray(v)) return v;
   if (typeof v !== "string") return [];
   return v.split(",").map((s) => s.trim()).filter(Boolean);
+}
+
+function ConnectionsPanel() {
+  const { user } = useAuth();
+  const me = user?.id;
+  const { data: rows = [], isLoading } = useMyConnections();
+  const otherIds = Array.from(new Set(rows.map((r) => (r.requester_id === me ? r.addressee_id : r.requester_id))));
+
+  const { data: peers = [] } = useQuery({
+    enabled: otherIds.length > 0,
+    queryKey: ["connection-peers", otherIds.sort().join(",")],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles_public" as any)
+        .select("id, first_name, last_name, generation, program_type, major, avatar_url")
+        .in("id", otherIds);
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+  const peerMap = new Map(peers.map((p) => [p.id, p]));
+
+  const incoming = rows.filter((r) => r.status === "pending" && r.addressee_id === me);
+  const outgoing = rows.filter((r) => r.status === "pending" && r.requester_id === me);
+  const accepted = rows.filter((r) => r.status === "accepted");
+
+  return (
+    <div className="space-y-6">
+      <ConnList
+        title="Pending requests"
+        icon={<Clock className="h-4 w-4" />}
+        empty="No incoming requests."
+        rows={incoming}
+        peerMap={peerMap}
+        meId={me!}
+        mode="incoming"
+      />
+      <ConnList
+        title="Sent requests"
+        icon={<Clock className="h-4 w-4" />}
+        empty="You haven't sent any requests."
+        rows={outgoing}
+        peerMap={peerMap}
+        meId={me!}
+        mode="outgoing"
+      />
+      <ConnList
+        title="My connections"
+        icon={<UserCheck className="h-4 w-4" />}
+        empty={isLoading ? "Loading…" : "No connections yet — browse the directory to start connecting."}
+        rows={accepted}
+        peerMap={peerMap}
+        meId={me!}
+        mode="accepted"
+      />
+    </div>
+  );
+}
+
+function ConnList({
+  title, icon, empty, rows, peerMap, meId, mode,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  empty: string;
+  rows: Array<{ id: string; requester_id: string; addressee_id: string }>;
+  peerMap: Map<string, any>;
+  meId: string;
+  mode: "incoming" | "outgoing" | "accepted";
+}) {
+  return (
+    <Card className="p-5">
+      <div className="mb-3 flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+        {icon}<span>{title} ({rows.length})</span>
+      </div>
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{empty}</p>
+      ) : (
+        <div className="space-y-2">
+          {rows.map((r) => {
+            const otherId = r.requester_id === meId ? r.addressee_id : r.requester_id;
+            const peer = peerMap.get(otherId);
+            return <ConnRow key={r.id} rowId={r.id} otherId={otherId} peer={peer} mode={mode} />;
+          })}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function ConnRow({ rowId, otherId, peer, mode }: { rowId: string; otherId: string; peer: any; mode: "incoming" | "outgoing" | "accepted" }) {
+  const avatar = useAvatarUrl(peer?.avatar_url);
+  const { accept, remove } = useConnectionActions(otherId);
+  const name = peer ? `${peer.first_name} ${peer.last_name}` : "Alumni";
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-md border p-3">
+      <Link to="/alumni/$id" params={{ id: otherId }} className="flex items-center gap-3 hover:underline">
+        <div className="h-10 w-10 overflow-hidden rounded-full bg-muted">
+          {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" /> : null}
+        </div>
+        <div>
+          <div className="text-sm font-medium">{name}</div>
+          {peer && <div className="text-xs text-muted-foreground">{peer.program_type} #{peer.generation} · {peer.major}</div>}
+        </div>
+      </Link>
+      <div className="flex gap-2">
+        {mode === "incoming" && (
+          <>
+            <Button size="sm" onClick={() => accept.mutate(rowId, { onSuccess: () => toast.success("Connected"), onError: (e: any) => toast.error(e.message) })} disabled={accept.isPending}>Accept</Button>
+            <Button size="sm" variant="outline" onClick={() => remove.mutate(rowId, { onSuccess: () => toast.success("Rejected"), onError: (e: any) => toast.error(e.message) })} disabled={remove.isPending}>Reject</Button>
+          </>
+        )}
+        {mode === "outgoing" && (
+          <Button size="sm" variant="outline" onClick={() => remove.mutate(rowId, { onSuccess: () => toast.success("Request cancelled"), onError: (e: any) => toast.error(e.message) })} disabled={remove.isPending}>Cancel</Button>
+        )}
+        {mode === "accepted" && (
+          <Button size="sm" variant="ghost" onClick={() => remove.mutate(rowId, { onSuccess: () => toast.success("Connection removed"), onError: (e: any) => toast.error(e.message) })} disabled={remove.isPending}>Remove</Button>
+        )}
+      </div>
+    </div>
+  );
 }
