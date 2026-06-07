@@ -194,13 +194,18 @@ function ProfilePage() {
         </div>
 
         <Tabs defaultValue="info" className="mt-8">
-          <TabsList className="flex-wrap h-auto">
+          <TabsList className="h-auto flex-wrap">
             <TabsTrigger value="info">Personal</TabsTrigger>
             <TabsTrigger value="prof">Professional</TabsTrigger>
             <TabsTrigger value="edu">Education</TabsTrigger>
             <TabsTrigger value="vis">Visibility</TabsTrigger>
             <TabsTrigger value="mentor">Mentor</TabsTrigger>
+            <TabsTrigger value="conn">Connections</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="conn">
+            <ConnectionsPanel />
+          </TabsContent>
 
           <TabsContent value="info">
             <Card className="p-6">
