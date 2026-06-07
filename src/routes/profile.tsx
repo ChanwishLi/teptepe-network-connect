@@ -158,7 +158,7 @@ function ProfilePage() {
         <div className="flex flex-wrap items-start gap-6">
           <div className="flex flex-col items-center gap-2">
             <Avatar className="h-24 w-24">
-              {avatarSignedUrl ? <AvatarImage src={avatarSignedUrl} alt="" /> : null}
+              {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
               <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
             </Avatar>
             <input
