@@ -82,17 +82,8 @@ function ProfilePage() {
   useEffect(() => { if (profile) setForm(profile); }, [profile]);
   useEffect(() => { if (mentorship) setMent(mentorship); }, [mentorship]);
 
-  // Generate signed URL for avatar (bucket is private)
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      if (!profile?.avatar_url) { setAvatarSignedUrl(null); return; }
-      const { data } = await supabase.storage.from("avatars").createSignedUrl(profile.avatar_url, 60 * 60);
-      if (!cancelled) setAvatarSignedUrl(data?.signedUrl ?? null);
-    }
-    load();
-    return () => { cancelled = true; };
-  }, [profile?.avatar_url]);
+  const avatarUrl = useAvatarUrl(profile?.avatar_url);
+  const { data: connCount } = useConnectionCount(user?.id);
 
   const uploadAvatar = useMutation({
     mutationFn: async (file: File) => {
