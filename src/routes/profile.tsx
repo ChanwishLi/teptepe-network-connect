@@ -76,7 +76,6 @@ function ProfilePage() {
 
   const [form, setForm] = useState<any>({});
   const [ment, setMent] = useState<any>({});
-  const [avatarSignedUrl, setAvatarSignedUrl] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { if (profile) setForm(profile); }, [profile]);
