@@ -13,7 +13,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "TEP-TEPE Alumni Network — Bridging Thai and international engineers" },
-      { name: "description", content: "Connect with fellow TEP-TEPE alumni around the world. Mentorship, events, internships, and the stories shaping our community." },
+      { name: "description", content: "Browse fellow TEP-TEPE alumni around the world. Mentorship, events, internships, and the stories shaping our community." },
     ],
   }),
   component: Landing,
