@@ -127,12 +127,17 @@ function RegisterPage() {
           skills: parseCsv(f.skills), expertise: parseCsv(f.expertise), research_interests: parseCsv(f.research_interests), certifications: parseCsv(f.certifications),
         }).eq("id", data.user.id);
 
-        if (f.edu_institution) {
-          const edu: any = { user_id: data.user.id, level: f.edu_level, institution: f.edu_institution, is_mandatory: false };
-          if (isCert) { edu.organization = f.edu_organization || f.edu_institution; edu.year_awarded = f.edu_year ? Number(f.edu_year) : null; }
-          else { edu.major = isHs ? null : f.edu_major || null; edu.country = f.edu_country || null; edu.graduation_year = f.edu_year ? Number(f.edu_year) : null; edu.honors = f.edu_honors || null; }
-          await supabase.from("education_records").insert(edu);
-        }
+        const eduRows = f.educations
+          .filter((e) => e.institution.trim())
+          .map((e) => {
+            const cert = e.level === "certification";
+            const hs = e.level === "high_school";
+            const row: any = { user_id: data.user!.id, level: e.level, institution: e.institution.trim(), is_mandatory: false };
+            if (cert) { row.organization = e.organization.trim() || e.institution.trim(); row.year_awarded = e.year ? Number(e.year) : null; }
+            else { row.major = hs ? null : (e.major.trim() || null); row.country = e.country.trim() || null; row.graduation_year = e.year ? Number(e.year) : null; row.honors = e.honors.trim() || null; }
+            return row;
+          });
+        if (eduRows.length) await supabase.from("education_records").insert(eduRows);
         if (f.company && f.position) {
           await supabase.from("employment_records").insert({
             user_id: data.user.id, company: f.company, position: f.position,
