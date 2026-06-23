@@ -45,11 +45,17 @@ function ProfilePage() {
     enabled: !!user,
     queryKey: ["profile", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", user!.id).single();
+      const { data, error } = await supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle();
       if (error) throw error;
       return data;
     },
   });
+
+  useEffect(() => {
+    if (!loading && user && !pLoading && profile === null) {
+      navigate({ to: "/complete-profile", replace: true });
+    }
+  }, [loading, user, pLoading, profile, navigate]);
 
   const { data: mentorship } = useQuery({
     enabled: !!user,
