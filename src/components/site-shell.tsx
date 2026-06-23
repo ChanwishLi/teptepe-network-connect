@@ -41,7 +41,7 @@ function SiteHeaderInner() {
         {/* Left: logo */}
         <div className="flex items-center">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logoAsset} alt="TEP-TEPE" className="h-10 w-auto" />
+            <img src={logoAsset.url} alt="TEP-TEPE" className="h-10 w-auto" />
           </Link>
         </div>
 
