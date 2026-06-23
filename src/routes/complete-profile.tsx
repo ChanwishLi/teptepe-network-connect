@@ -132,6 +132,7 @@ function CompleteProfilePage() {
         admission_year: Number(f.admission_year), graduation_year: Number(f.graduation_year),
         generation: Number(f.generation),
         partner_university: f.program_type === "TEPE" ? null : f.partner_university,
+        partner_major: f.program_type === "TEPE" ? null : (f.partner_major || null),
         professional_summary: f.professional_summary || null,
         skills: parseCsv(f.skills), expertise: parseCsv(f.expertise), research_interests: parseCsv(f.research_interests), certifications: parseCsv(f.certifications),
         profile_complete: true,
