@@ -105,7 +105,12 @@ function Landing() {
       {/* Hero with building photo */}
       <section className="relative overflow-hidden border-b border-border">
         <div className="absolute inset-0 -z-10">
-          <div className="h-full w-full bg-[linear-gradient(135deg,var(--background)_0%,var(--muted)_52%,color-mix(in_oklch,var(--primary)_22%,transparent)_100%)]" />
+          <img
+            src="/__l5e/assets-v1/d03526fd-dacc-4895-afd3-68dcdc583672/tse-building.jpeg"
+            alt=""
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(120deg,color-mix(in_oklch,var(--background)_92%,transparent)_0%,color-mix(in_oklch,var(--background)_70%,transparent)_55%,color-mix(in_oklch,var(--background)_30%,transparent)_100%)]" />
         </div>
         <div className="mx-auto max-w-7xl px-4 py-28 lg:px-8 lg:py-36">
           <div className="max-w-3xl">

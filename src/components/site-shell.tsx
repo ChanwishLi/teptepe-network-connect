@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { LogOut, Menu, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import logoAsset from "@/assets/tep-tepe-logo.svg";
+import logoAsset from "@/assets/tep-tepe-logo-v2.png.asset.json";
 
 // Routes where the navbar should be hidden to focus the onboarding flow.
 const ONBOARDING_PATHS = ["/register", "/complete-profile"];
@@ -41,7 +41,7 @@ function SiteHeaderInner() {
         {/* Left: logo */}
         <div className="flex items-center">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logoAsset} alt="TEP-TEPE" className="h-10 w-auto" />
+            <img src={logoAsset.url} alt="TEP-TEPE" className="h-10 w-auto" />
           </Link>
         </div>
 

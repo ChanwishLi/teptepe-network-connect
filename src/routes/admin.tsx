@@ -94,7 +94,7 @@ function InternshipApprovals() {
             <div>
               <div className="font-display text-lg font-semibold">{p.position} <span className="text-muted-foreground font-normal">· {p.company_name}</span></div>
               <div className="mt-1 text-xs text-muted-foreground">{p.employment_type} · {p.location ?? "—"} · contact: {p.contact_email ?? "—"}</div>
-              <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{p.description}</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{p.description}</p>
             </div>
             <Badge variant="outline">{p.status}</Badge>
           </div>
@@ -154,7 +154,35 @@ function MembersAdmin() {
 }
 
 /* ---------- Generic CRUD shell ---------- */
-type Field = { name: string; label: string; type?: "text" | "textarea" | "date" | "number" | "url" | "switch"; rows?: number };
+type Field = { name: string; label: string; type?: "text" | "textarea" | "date" | "number" | "url" | "switch" | "image"; rows?: number; hint?: string };
+
+function ImageUploadField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const handleFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const path = `uploads/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
+      if (error) throw error;
+      const { data } = supabase.storage.from("media").getPublicUrl(path);
+      onChange(data.publicUrl);
+      toast.success("Image uploaded");
+    } catch (e: any) { toast.error(e.message); }
+    finally { setUploading(false); }
+  };
+  return (
+    <div className="space-y-2">
+      {value && <img src={value} alt="" className="h-32 w-full rounded-md object-cover border border-border" />}
+      <div className="flex items-center gap-2">
+        <Input type="file" accept="image/*" disabled={uploading} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+        {value && <Button type="button" size="sm" variant="ghost" onClick={() => onChange("")}>Clear</Button>}
+      </div>
+      <Input placeholder="…or paste an image URL" value={value} onChange={(e) => onChange(e.target.value)} />
+      {uploading && <div className="text-xs text-muted-foreground">Uploading…</div>}
+    </div>
+  );
+}
 
 function CrudSection<T extends { id: string }>({
   title, table, fields, listColumns, defaultRow, orderBy = "created_at",
@@ -218,6 +246,8 @@ function CrudSection<T extends { id: string }>({
                     <Textarea rows={f.rows ?? 4} value={editing?.[f.name] ?? ""} onChange={(e) => setEditing({ ...editing, [f.name]: e.target.value })} />
                   ) : f.type === "switch" ? (
                     <Switch checked={!!editing?.[f.name]} onCheckedChange={(v) => setEditing({ ...editing, [f.name]: v })} />
+                  ) : f.type === "image" ? (
+                    <ImageUploadField value={editing?.[f.name] ?? ""} onChange={(v) => setEditing({ ...editing, [f.name]: v })} />
                   ) : (
                     <Input type={f.type ?? "text"} value={editing?.[f.name] ?? ""} onChange={(e) => setEditing({ ...editing, [f.name]: f.type === "number" ? Number(e.target.value) : e.target.value })} />
                   )}
@@ -267,7 +297,7 @@ function EventsAdmin() {
         { name: "location", label: "Location" },
         { name: "description", label: "Short description (preview)", type: "textarea", rows: 2 },
         { name: "content", label: "Full blog content", type: "textarea", rows: 10 },
-        { name: "banner_url", label: "Banner image URL", type: "url" },
+        { name: "banner_url", label: "Banner image", type: "image" },
         { name: "rsvp_deadline", label: "RSVP deadline", type: "date" },
         { name: "is_published", label: "Published", type: "switch" },
         { name: "is_archived", label: "Archived", type: "switch" },
@@ -298,7 +328,7 @@ function StoriesAdmin() {
         { name: "company", label: "Company" },
         { name: "generation", label: "Generation", type: "number" },
         { name: "content", label: "Story", type: "textarea", rows: 8 },
-        { name: "image_url", label: "Image URL", type: "url" },
+        { name: "image_url", label: "Cover image", type: "image" },
         { name: "is_published", label: "Published", type: "switch" },
       ]}
       listColumns={(r) => (
@@ -320,7 +350,7 @@ function PartnersAdmin() {
       defaultRow={{ name: "", logo_url: "", website: "", display_order: 0 }}
       fields={[
         { name: "name", label: "Company name" },
-        { name: "logo_url", label: "Logo URL", type: "url" },
+        { name: "logo_url", label: "Logo", type: "image" },
         { name: "website", label: "Website", type: "url" },
         { name: "display_order", label: "Display order", type: "number" },
       ]}

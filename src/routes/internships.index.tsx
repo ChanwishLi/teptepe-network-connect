@@ -111,7 +111,7 @@ function InternshipsPage() {
                   <div className="mt-1 text-sm text-muted-foreground">
                     {[p.company_name, p.location].filter(Boolean).join(" · ")}
                   </div>
-                  {p.description && <p className="mt-3 text-sm text-muted-foreground line-clamp-3">{p.description}</p>}
+                  {p.description && <p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">{p.description}</p>}
                   <div className="mt-4 flex items-center justify-between">
                     {p.deadline && <div className="text-xs text-muted-foreground">Apply by {new Date(p.deadline).toLocaleDateString()}</div>}
                     {p.application_link && (
