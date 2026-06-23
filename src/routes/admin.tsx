@@ -297,7 +297,7 @@ function EventsAdmin() {
         { name: "location", label: "Location" },
         { name: "description", label: "Short description (preview)", type: "textarea", rows: 2 },
         { name: "content", label: "Full blog content", type: "textarea", rows: 10 },
-        { name: "banner_url", label: "Banner image URL", type: "url" },
+        { name: "banner_url", label: "Banner image", type: "image" },
         { name: "rsvp_deadline", label: "RSVP deadline", type: "date" },
         { name: "is_published", label: "Published", type: "switch" },
         { name: "is_archived", label: "Archived", type: "switch" },
@@ -328,7 +328,7 @@ function StoriesAdmin() {
         { name: "company", label: "Company" },
         { name: "generation", label: "Generation", type: "number" },
         { name: "content", label: "Story", type: "textarea", rows: 8 },
-        { name: "image_url", label: "Image URL", type: "url" },
+        { name: "image_url", label: "Cover image", type: "image" },
         { name: "is_published", label: "Published", type: "switch" },
       ]}
       listColumns={(r) => (
@@ -350,7 +350,7 @@ function PartnersAdmin() {
       defaultRow={{ name: "", logo_url: "", website: "", display_order: 0 }}
       fields={[
         { name: "name", label: "Company name" },
-        { name: "logo_url", label: "Logo URL", type: "url" },
+        { name: "logo_url", label: "Logo", type: "image" },
         { name: "website", label: "Website", type: "url" },
         { name: "display_order", label: "Display order", type: "number" },
       ]}
