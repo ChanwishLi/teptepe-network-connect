@@ -334,15 +334,29 @@ function CompleteProfilePage() {
 
               <div className="space-y-4 border-t pt-5">
                 <h2 className="font-display text-lg font-semibold">Additional education</h2>
-                <div><Label>Type</Label><Select value={f.edu_level} onValueChange={(v) => setF({ ...f, edu_level: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="high_school">High School</SelectItem><SelectItem value="bachelor">Bachelor's Degree</SelectItem><SelectItem value="master">Master's Degree</SelectItem><SelectItem value="phd">Doctoral Degree (PhD)</SelectItem><SelectItem value="certification">Professional Certification</SelectItem></SelectContent></Select></div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label={isCert ? "Certification name" : isHs ? "School name" : "University"} value={f.edu_institution} onChange={(v) => setF({ ...f, edu_institution: v })} />
-                  {isCert && <Field label="Issuing organization" value={f.edu_organization} onChange={(v) => setF({ ...f, edu_organization: v })} />}
-                  {!isCert && !isHs && <Field label="Major" value={f.edu_major} onChange={(v) => setF({ ...f, edu_major: v })} />}
-                  {!isCert && <Field label="Country" value={f.edu_country} onChange={(v) => setF({ ...f, edu_country: v })} />}
-                  <Field label={isCert ? "Year awarded" : "Graduation year"} value={f.edu_year} onChange={(v) => setF({ ...f, edu_year: v })} />
-                  {!isCert && !isHs && <Field label="Honors" value={f.edu_honors} onChange={(v) => setF({ ...f, edu_honors: v })} />}
-                </div>
+                <p className="text-xs text-muted-foreground">Add as many entries as you like: high school, extra degrees, certifications.</p>
+                {f.educations.map((e: any, i: number) => {
+                  const cert = e.level === "certification";
+                  const hs = e.level === "high_school";
+                  return (
+                    <div key={i} className="space-y-3 rounded-md border p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Entry {i + 1}</span>
+                        <Button variant="ghost" size="sm" onClick={() => removeEdu(i)}>Remove</Button>
+                      </div>
+                      <div><Label>Type</Label><Select value={e.level} onValueChange={(v) => updateEdu(i, { level: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="high_school">High School</SelectItem><SelectItem value="bachelor">Bachelor's Degree</SelectItem><SelectItem value="master">Master's Degree</SelectItem><SelectItem value="phd">Doctoral Degree (PhD)</SelectItem><SelectItem value="certification">Professional Certification</SelectItem></SelectContent></Select></div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label={cert ? "Certification name" : hs ? "School name" : "University"} value={e.institution} onChange={(v) => updateEdu(i, { institution: v })} />
+                        {cert && <Field label="Issuing organization" value={e.organization} onChange={(v) => updateEdu(i, { organization: v })} />}
+                        {!cert && !hs && <Field label="Major" value={e.major} onChange={(v) => updateEdu(i, { major: v })} />}
+                        {!cert && <Field label="Country" value={e.country} onChange={(v) => updateEdu(i, { country: v })} />}
+                        <Field label={cert ? "Year awarded" : "Graduation year"} value={e.year} onChange={(v) => updateEdu(i, { year: v })} />
+                        {!cert && !hs && <Field label="Honors" value={e.honors} onChange={(v) => updateEdu(i, { honors: v })} />}
+                      </div>
+                    </div>
+                  );
+                })}
+                <Button variant="outline" size="sm" onClick={addEdu}>+ Add education entry</Button>
               </div>
             </div>
           )}
