@@ -341,15 +341,29 @@ function RegisterPage() {
                 <CheckRow checked={f.is_current} onChange={(v) => set("is_current", v)} label="This is my current role" />
 
                 <h2 className="pt-4 font-display text-lg font-semibold">Additional education</h2>
-                <Field label="Type"><Select value={f.edu_level} onValueChange={(v) => set("edu_level", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="high_school">High School</SelectItem><SelectItem value="bachelor">Bachelor's Degree</SelectItem><SelectItem value="master">Master's Degree</SelectItem><SelectItem value="phd">Doctoral Degree (PhD)</SelectItem><SelectItem value="certification">Professional Certification</SelectItem></SelectContent></Select></Field>
-                <Grid2>
-                  <Field label={isCert ? "Certification name" : isHs ? "School name" : "University"}><Input value={f.edu_institution} onChange={(e) => set("edu_institution", e.target.value)} /></Field>
-                  {isCert && <Field label="Issuing organization"><Input value={f.edu_organization} onChange={(e) => set("edu_organization", e.target.value)} /></Field>}
-                  {!isCert && !isHs && <Field label="Major"><Input value={f.edu_major} onChange={(e) => set("edu_major", e.target.value)} /></Field>}
-                  {!isCert && <Field label="Country"><Input value={f.edu_country} onChange={(e) => set("edu_country", e.target.value)} /></Field>}
-                  <Field label={isCert ? "Year awarded" : "Graduation year"}><Input type="number" value={f.edu_year} onChange={(e) => set("edu_year", e.target.value)} /></Field>
-                  {!isCert && !isHs && <Field label="Honors"><Input value={f.edu_honors} onChange={(e) => set("edu_honors", e.target.value)} /></Field>}
-                </Grid2>
+                <p className="text-xs text-muted-foreground">Add high school, additional degrees, or certifications. You can add as many as you like.</p>
+                {f.educations.map((e, i) => {
+                  const cert = e.level === "certification";
+                  const hs = e.level === "high_school";
+                  return (
+                    <div key={i} className="space-y-3 rounded-md border p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Entry {i + 1}</span>
+                        <Button type="button" size="sm" variant="ghost" onClick={() => removeEdu(i)}>Remove</Button>
+                      </div>
+                      <Field label="Type"><Select value={e.level} onValueChange={(v) => updateEdu(i, { level: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="high_school">High School</SelectItem><SelectItem value="bachelor">Bachelor's Degree</SelectItem><SelectItem value="master">Master's Degree</SelectItem><SelectItem value="phd">Doctoral Degree (PhD)</SelectItem><SelectItem value="certification">Professional Certification</SelectItem></SelectContent></Select></Field>
+                      <Grid2>
+                        <Field label={cert ? "Certification name" : hs ? "School name" : "University"}><Input value={e.institution} onChange={(ev) => updateEdu(i, { institution: ev.target.value })} /></Field>
+                        {cert && <Field label="Issuing organization"><Input value={e.organization} onChange={(ev) => updateEdu(i, { organization: ev.target.value })} /></Field>}
+                        {!cert && !hs && <Field label="Major"><Input value={e.major} onChange={(ev) => updateEdu(i, { major: ev.target.value })} /></Field>}
+                        {!cert && <Field label="Country"><Input value={e.country} onChange={(ev) => updateEdu(i, { country: ev.target.value })} /></Field>}
+                        <Field label={cert ? "Year awarded" : "Graduation year"}><Input type="number" value={e.year} onChange={(ev) => updateEdu(i, { year: ev.target.value })} /></Field>
+                        {!cert && !hs && <Field label="Honors"><Input value={e.honors} onChange={(ev) => updateEdu(i, { honors: ev.target.value })} /></Field>}
+                      </Grid2>
+                    </div>
+                  );
+                })}
+                <Button type="button" variant="outline" size="sm" onClick={addEdu}>+ Add education entry</Button>
               </>
             )}
 
