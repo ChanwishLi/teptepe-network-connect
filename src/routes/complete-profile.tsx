@@ -100,8 +100,6 @@ function CompleteProfilePage() {
   const validStep3 = !!(f.program_type && f.major && f.generation && f.admission_year && f.graduation_year && (f.program_type === "TEPE" || (f.partner_university && f.partner_degree)));
   const validStep5 = !(f.company || f.position) || !!(f.company && f.position);
   const validStep6 = !!(f.c_data && f.c_directory);
-  const isCert = f.edu_level === "certification";
-  const isHs = f.edu_level === "high_school";
 
   const canContinue = () => {
     if (step === 1) return validStep1;
