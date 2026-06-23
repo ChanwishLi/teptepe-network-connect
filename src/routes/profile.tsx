@@ -45,11 +45,17 @@ function ProfilePage() {
     enabled: !!user,
     queryKey: ["profile", user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", user!.id).single();
+      const { data, error } = await supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle();
       if (error) throw error;
       return data;
     },
   });
+
+  useEffect(() => {
+    if (!loading && user && !pLoading && profile === null) {
+      navigate({ to: "/complete-profile", replace: true });
+    }
+  }, [loading, user, pLoading, profile, navigate]);
 
   const { data: mentorship } = useQuery({
     enabled: !!user,
@@ -176,12 +182,7 @@ function ProfilePage() {
             </p>
             {(!profile.program_type || !profile.generation || !profile.major) && (
               <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
-                <strong>Complete your profile.</strong> Please fill in your program, generation, and major below so you can be approved and appear in the directory.
-              </div>
-            )}
-            {!profile.is_approved && (
-              <div className="mt-2 rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-900 dark:text-amber-200">
-                Your account is awaiting admin approval. Once approved you'll appear in the alumni directory.
+                <strong>Complete your profile.</strong> Please fill in your program, generation, and major below so you appear in the directory.
               </div>
             )}
           </div>

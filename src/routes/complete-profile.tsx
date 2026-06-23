@@ -32,13 +32,18 @@ function CompleteProfilePage() {
     phone: "", address: "", city: "", province: "", country: "",
     facebook_url: "", instagram_url: "", linkedin_url: "", personal_website: "",
     student_id: "", program_type: "" as ProgramType | "", major: "", admission_year: "", graduation_year: "",
-    generation: "", partner_university: "", partner_degree: "bachelor", honors: "",
+    generation: "", partner_university: "", partner_degree: "bachelor", partner_major: "", honors: "",
     professional_summary: "", skills: "", expertise: "", research_interests: "", certifications: "",
     company: "", position: "", business_type: "", industry: "", work_city: "", work_country: "", start_year: "", end_year: "", is_current: true,
-    edu_level: "high_school", edu_institution: "", edu_major: "", edu_country: "", edu_year: "", edu_organization: "", edu_honors: "",
+    educations: [] as Array<{ level: string; institution: string; major: string; country: string; year: string; organization: string; honors: string }>,
     mentor_available: false, mentor_hours: "", mentor_contact: "", mentor_areas: "", mentor_industry: "",
     c_data: false, c_directory: false, c_comms: false, c_mentor: false,
   });
+
+  const blankEdu = () => ({ level: "high_school", institution: "", major: "", country: "", year: "", organization: "", honors: "" });
+  const updateEdu = (i: number, patch: any) => setF((p: any) => ({ ...p, educations: p.educations.map((e: any, idx: number) => idx === i ? { ...e, ...patch } : e) }));
+  const addEdu = () => setF((p: any) => ({ ...p, educations: [...p.educations, blankEdu()] }));
+  const removeEdu = (i: number) => setF((p: any) => ({ ...p, educations: p.educations.filter((_: any, idx: number) => idx !== i) }));
 
   useEffect(() => { if (!loading && !user) navigate({ to: "/login" }); }, [loading, user, navigate]);
 
@@ -72,6 +77,7 @@ function CompleteProfilePage() {
         graduation_year: data.graduation_year ?? "",
         generation: data.generation ?? "",
         partner_university: data.partner_university || "",
+        partner_major: data.partner_major || "",
         professional_summary: data.professional_summary || "",
         skills: csv(data.skills),
         expertise: csv(data.expertise),
@@ -94,8 +100,6 @@ function CompleteProfilePage() {
   const validStep3 = !!(f.program_type && f.major && f.generation && f.admission_year && f.graduation_year && (f.program_type === "TEPE" || (f.partner_university && f.partner_degree)));
   const validStep5 = !(f.company || f.position) || !!(f.company && f.position);
   const validStep6 = !!(f.c_data && f.c_directory);
-  const isCert = f.edu_level === "certification";
-  const isHs = f.edu_level === "high_school";
 
   const canContinue = () => {
     if (step === 1) return validStep1;
@@ -128,6 +132,7 @@ function CompleteProfilePage() {
         admission_year: Number(f.admission_year), graduation_year: Number(f.graduation_year),
         generation: Number(f.generation),
         partner_university: f.program_type === "TEPE" ? null : f.partner_university,
+        partner_major: f.program_type === "TEPE" ? null : (f.partner_major || null),
         professional_summary: f.professional_summary || null,
         skills: parseCsv(f.skills), expertise: parseCsv(f.expertise), research_interests: parseCsv(f.research_interests), certifications: parseCsv(f.certifications),
         profile_complete: true,
@@ -139,16 +144,23 @@ function CompleteProfilePage() {
       const { data: mandatory } = await supabase.from("education_records").select("id").eq("user_id", user!.id).eq("is_mandatory", true).limit(1);
       if (!mandatory?.length) {
         const mandatoryRows: any[] = [{ user_id: user!.id, level: "bachelor", institution: "Thammasat University", major: f.major, country: "Thailand", graduation_year: Number(f.graduation_year), honors: f.honors || null, is_mandatory: true }];
-        if (f.program_type !== "TEPE") mandatoryRows.push({ user_id: user!.id, level: f.partner_degree, institution: f.partner_university, major: f.major, graduation_year: Number(f.graduation_year), is_mandatory: true });
+        if (f.program_type !== "TEPE") mandatoryRows.push({ user_id: user!.id, level: f.partner_degree, institution: f.partner_university, major: (f.partner_major || f.major), graduation_year: Number(f.graduation_year), is_mandatory: true });
         const { error: eduErr } = await supabase.from("education_records").insert(mandatoryRows);
         if (eduErr) throw eduErr;
       }
 
-      if (f.edu_institution) {
-        const edu: any = { user_id: user!.id, level: f.edu_level, institution: f.edu_institution, is_mandatory: false };
-        if (isCert) { edu.organization = f.edu_organization || f.edu_institution; edu.year_awarded = f.edu_year ? Number(f.edu_year) : null; }
-        else { edu.major = isHs ? null : f.edu_major || null; edu.country = f.edu_country || null; edu.graduation_year = f.edu_year ? Number(f.edu_year) : null; edu.honors = f.edu_honors || null; }
-        const { error: extraEduErr } = await supabase.from("education_records").insert(edu);
+      const extraRows = (f.educations as any[])
+        .filter((e) => e.institution?.trim())
+        .map((e) => {
+          const cert = e.level === "certification";
+          const hs = e.level === "high_school";
+          const row: any = { user_id: user!.id, level: e.level, institution: e.institution.trim(), is_mandatory: false };
+          if (cert) { row.organization = e.organization?.trim() || e.institution.trim(); row.year_awarded = e.year ? Number(e.year) : null; }
+          else { row.major = hs ? null : (e.major?.trim() || null); row.country = e.country?.trim() || null; row.graduation_year = e.year ? Number(e.year) : null; row.honors = e.honors?.trim() || null; }
+          return row;
+        });
+      if (extraRows.length) {
+        const { error: extraEduErr } = await supabase.from("education_records").insert(extraRows);
         if (extraEduErr) throw extraEduErr;
       }
 
@@ -180,7 +192,7 @@ function CompleteProfilePage() {
       });
       if (consentErr) throw consentErr;
 
-      toast.success("Profile complete! Awaiting admin approval.");
+      toast.success("Profile complete! Welcome to the alumni directory.");
       navigate({ to: "/directory", replace: true });
     } catch (e: any) {
       toast.error(e.message || "Failed to save");
@@ -269,10 +281,17 @@ function CompleteProfilePage() {
                 </Select>
               </div>
               {f.program_type && f.program_type !== "TEPE" && (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div><Label>Partner university *</Label><Select value={f.partner_university} onValueChange={(v) => setF({ ...f, partner_university: v })}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{partners.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent></Select></div>
-                  <div><Label>Partner university degree *</Label><Select value={f.partner_degree} onValueChange={(v) => setF({ ...f, partner_degree: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="bachelor">Bachelor's Degree</SelectItem><SelectItem value="master">Master's Degree</SelectItem><SelectItem value="phd">Doctoral Degree (PhD)</SelectItem></SelectContent></Select></div>
-                </div>
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div><Label>Partner university *</Label><Select value={f.partner_university} onValueChange={(v) => setF({ ...f, partner_university: v })}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{partners.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent></Select></div>
+                    <div><Label>Partner degree level *</Label><Select value={f.partner_degree} onValueChange={(v) => setF({ ...f, partner_degree: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="bachelor">Bachelor's Degree</SelectItem><SelectItem value="master">Master's Degree</SelectItem><SelectItem value="phd">Doctoral Degree (PhD)</SelectItem></SelectContent></Select></div>
+                  </div>
+                  <div>
+                    <Label>Partner degree program / major</Label>
+                    <Input value={f.partner_major} onChange={(e) => setF({ ...f, partner_major: e.target.value })} placeholder="e.g. Electronics Engineering (KU Leuven)" />
+                    <p className="mt-1 text-xs text-muted-foreground">This can be different from your Thammasat major.</p>
+                  </div>
+                </>
               )}
               <div>
                 <Label>Generation *</Label>
@@ -322,15 +341,29 @@ function CompleteProfilePage() {
 
               <div className="space-y-4 border-t pt-5">
                 <h2 className="font-display text-lg font-semibold">Additional education</h2>
-                <div><Label>Type</Label><Select value={f.edu_level} onValueChange={(v) => setF({ ...f, edu_level: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="high_school">High School</SelectItem><SelectItem value="bachelor">Bachelor's Degree</SelectItem><SelectItem value="master">Master's Degree</SelectItem><SelectItem value="phd">Doctoral Degree (PhD)</SelectItem><SelectItem value="certification">Professional Certification</SelectItem></SelectContent></Select></div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field label={isCert ? "Certification name" : isHs ? "School name" : "University"} value={f.edu_institution} onChange={(v) => setF({ ...f, edu_institution: v })} />
-                  {isCert && <Field label="Issuing organization" value={f.edu_organization} onChange={(v) => setF({ ...f, edu_organization: v })} />}
-                  {!isCert && !isHs && <Field label="Major" value={f.edu_major} onChange={(v) => setF({ ...f, edu_major: v })} />}
-                  {!isCert && <Field label="Country" value={f.edu_country} onChange={(v) => setF({ ...f, edu_country: v })} />}
-                  <Field label={isCert ? "Year awarded" : "Graduation year"} value={f.edu_year} onChange={(v) => setF({ ...f, edu_year: v })} />
-                  {!isCert && !isHs && <Field label="Honors" value={f.edu_honors} onChange={(v) => setF({ ...f, edu_honors: v })} />}
-                </div>
+                <p className="text-xs text-muted-foreground">Add as many entries as you like: high school, extra degrees, certifications.</p>
+                {f.educations.map((e: any, i: number) => {
+                  const cert = e.level === "certification";
+                  const hs = e.level === "high_school";
+                  return (
+                    <div key={i} className="space-y-3 rounded-md border p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Entry {i + 1}</span>
+                        <Button variant="ghost" size="sm" onClick={() => removeEdu(i)}>Remove</Button>
+                      </div>
+                      <div><Label>Type</Label><Select value={e.level} onValueChange={(v) => updateEdu(i, { level: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="high_school">High School</SelectItem><SelectItem value="bachelor">Bachelor's Degree</SelectItem><SelectItem value="master">Master's Degree</SelectItem><SelectItem value="phd">Doctoral Degree (PhD)</SelectItem><SelectItem value="certification">Professional Certification</SelectItem></SelectContent></Select></div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Field label={cert ? "Certification name" : hs ? "School name" : "University"} value={e.institution} onChange={(v) => updateEdu(i, { institution: v })} />
+                        {cert && <Field label="Issuing organization" value={e.organization} onChange={(v) => updateEdu(i, { organization: v })} />}
+                        {!cert && !hs && <Field label="Major" value={e.major} onChange={(v) => updateEdu(i, { major: v })} />}
+                        {!cert && <Field label="Country" value={e.country} onChange={(v) => updateEdu(i, { country: v })} />}
+                        <Field label={cert ? "Year awarded" : "Graduation year"} value={e.year} onChange={(v) => updateEdu(i, { year: v })} />
+                        {!cert && !hs && <Field label="Honors" value={e.honors} onChange={(v) => updateEdu(i, { honors: v })} />}
+                      </div>
+                    </div>
+                  );
+                })}
+                <Button variant="outline" size="sm" onClick={addEdu}>+ Add education entry</Button>
               </div>
             </div>
           )}

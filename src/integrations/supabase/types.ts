@@ -383,6 +383,7 @@ export type Database = {
           linkedin_url: string | null
           major: Database["public"]["Enums"]["major_type"] | null
           nationality: string | null
+          partner_major: string | null
           partner_university: string | null
           personal_website: string | null
           phone: string | null
@@ -426,6 +427,7 @@ export type Database = {
           linkedin_url?: string | null
           major?: Database["public"]["Enums"]["major_type"] | null
           nationality?: string | null
+          partner_major?: string | null
           partner_university?: string | null
           personal_website?: string | null
           phone?: string | null
@@ -469,6 +471,7 @@ export type Database = {
           linkedin_url?: string | null
           major?: Database["public"]["Enums"]["major_type"] | null
           nationality?: string | null
+          partner_major?: string | null
           partner_university?: string | null
           personal_website?: string | null
           phone?: string | null
@@ -646,6 +649,7 @@ export type Database = {
           last_name: string | null
           linkedin_url: string | null
           major: Database["public"]["Enums"]["major_type"] | null
+          partner_major: string | null
           partner_university: string | null
           personal_website: string | null
           phone: string | null

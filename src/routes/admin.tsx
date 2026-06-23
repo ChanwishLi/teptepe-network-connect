@@ -143,8 +143,8 @@ function MembersAdmin() {
               <div className="text-xs text-muted-foreground">{m.email} · {m.program_type} #{m.generation}</div>
             </div>
             <div className="flex items-center gap-5">
-              <label className="flex items-center gap-2 text-xs"><span>Approved</span><Switch checked={!!m.is_approved} onCheckedChange={(v) => toggle.mutate({ id: m.id, patch: { is_approved: v } })} /></label>
               <label className="flex items-center gap-2 text-xs"><span>Featured</span><Switch checked={!!m.is_featured} onCheckedChange={(v) => toggle.mutate({ id: m.id, patch: { is_featured: v } })} /></label>
+              <Button size="sm" variant="ghost" onClick={() => { if (confirm("Permanently delete this member's profile?")) toggle.mutate({ id: m.id, patch: { profile_complete: false } }); }}>Hide</Button>
             </div>
           </Card>
         ))}
