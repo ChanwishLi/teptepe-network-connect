@@ -24,16 +24,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAdmin(false);
       return;
     }
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid);
-    setIsAdmin(!!data?.some((r) => r.role === "admin"));
+    const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", uid);
+    setIsAdmin(!error && !!data?.some((r) => r.role === "admin"));
   };
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
+      setLoading(true);
       // Defer to avoid auth deadlock
-      setTimeout(() => loadRole(s?.user?.id), 0);
+      setTimeout(() => loadRole(s?.user?.id).finally(() => setLoading(false)), 0);
     });
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
