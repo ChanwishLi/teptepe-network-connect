@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { useAuth } from "@/lib/auth-context";
 import { PageShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +49,7 @@ const TOTAL_STEPS = 7;
 
 function RegisterPage() {
   const navigate = useNavigate();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [step, setStep] = useState(1);
   const [f, setF] = useState<FormState>(initial);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -58,6 +61,18 @@ function RegisterPage() {
   const updateEdu = (i: number, patch: Partial<EduEntry>) => setF((p) => ({ ...p, educations: p.educations.map((e, idx) => idx === i ? { ...e, ...patch } : e) }));
   const addEdu = () => setF((p) => ({ ...p, educations: [...p.educations, blankEdu()] }));
   const removeEdu = (i: number) => setF((p) => ({ ...p, educations: p.educations.filter((_, idx) => idx !== i) }));
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+    (async () => {
+      if (isAdmin) {
+        navigate({ to: "/admin", replace: true });
+        return;
+      }
+      const { data } = await supabase.from("profiles").select("profile_complete").eq("id", user.id).maybeSingle();
+      navigate({ to: data?.profile_complete ? "/directory" : "/complete-profile", replace: true });
+    })();
+  }, [authLoading, user, isAdmin, navigate]);
 
   const onAvatarChange = (file: File | null) => {
     setAvatarFile(file);

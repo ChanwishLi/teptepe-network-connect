@@ -20,7 +20,7 @@ export const Route = createFileRoute("/complete-profile")({
 });
 
 function CompleteProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
@@ -85,9 +85,9 @@ function CompleteProfilePage() {
         certifications: csv(data.certifications),
       }));
       setHasAvatar(!!data.avatar_url);
-      if (data.profile_complete) navigate({ to: "/directory", replace: true });
+      if (data.profile_complete) navigate({ to: isAdmin ? "/admin" : "/directory", replace: true });
     })();
-  }, [user, navigate]);
+  }, [user, isAdmin, navigate]);
 
   const onAvatar = (file: File | null) => {
     setAvatarFile(file);
