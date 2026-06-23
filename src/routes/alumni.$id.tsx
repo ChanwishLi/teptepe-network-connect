@@ -4,13 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/site-shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Mail, Linkedin, Globe, Facebook, Instagram, MapPin, UserPlus, UserCheck, Clock, X, Users } from "lucide-react";
-import { toast } from "sonner";
+import { Mail, Phone, Linkedin, Globe, Facebook, Instagram, MapPin } from "lucide-react";
 import { generationStatus } from "@/lib/constants";
 import { useAvatarUrl } from "@/lib/avatar";
-import { useConnectionState, useConnectionActions, useConnectionCount } from "@/lib/connections";
-import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/alumni/$id")({
   component: AlumniDetail,
@@ -19,7 +15,6 @@ export const Route = createFileRoute("/alumni/$id")({
 
 function AlumniDetail() {
   const { id } = Route.useParams();
-  const { user } = useAuth();
   const { data, isLoading } = useQuery({
     queryKey: ["alumni", id],
     queryFn: async () => {
@@ -34,17 +29,12 @@ function AlumniDetail() {
   });
 
   const avatar = useAvatarUrl(data?.profile?.avatar_url);
-  const { data: connState } = useConnectionState(id);
-  const { data: connCount } = useConnectionCount(id);
-  const { send, accept, remove } = useConnectionActions(id);
 
   if (isLoading) return <PageShell><div className="py-20 text-center text-muted-foreground">Loading…</div></PageShell>;
   const p = data?.profile;
   if (!p) return <PageShell><div className="py-20 text-center">Not found.</div></PageShell>;
 
   const cur = data!.emp.find((e: any) => e.is_current);
-  const isConnected = connState?.kind === "accepted";
-  const canSeeContact = isConnected || user?.id === id;
 
   return (
     <PageShell>
@@ -66,9 +56,6 @@ function AlumniDetail() {
                   <h1 className="font-display text-3xl font-bold">{p.first_name} {p.last_name}</h1>
                   <div className="text-sm text-muted-foreground">{cur ? `${cur.position} · ${cur.company}` : p.program_type}</div>
                   {p.city || p.country ? <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><MapPin className="h-3 w-3" />{[p.city, p.country].filter(Boolean).join(", ")}</div> : null}
-                  <div className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <Users className="h-3 w-3" /> {connCount ?? 0} {connCount === 1 ? "connection" : "connections"}
-                  </div>
                 </div>
               </div>
               <div className="flex flex-col items-end gap-2">
@@ -77,22 +64,6 @@ function AlumniDetail() {
                   <Badge variant="secondary">{generationStatus(p.generation)}</Badge>
                   {data?.mentor?.available_as_mentor && <Badge className="bg-[var(--gold)]/30 text-foreground hover:bg-[var(--gold)]/40">Mentor</Badge>}
                 </div>
-                <ConnectControls
-                  state={connState}
-                  pending={send.isPending || accept.isPending || remove.isPending}
-                  onSend={() => send.mutate(undefined, {
-                    onSuccess: () => toast.success("Connection request sent"),
-                    onError: (e: any) => toast.error(e.message),
-                  })}
-                  onAccept={(rid) => accept.mutate(rid, {
-                    onSuccess: () => toast.success("Connection accepted"),
-                    onError: (e: any) => toast.error(e.message),
-                  })}
-                  onRemove={(rid, label) => remove.mutate(rid, {
-                    onSuccess: () => toast.success(label),
-                    onError: (e: any) => toast.error(e.message),
-                  })}
-                />
               </div>
             </div>
 
@@ -138,20 +109,17 @@ function AlumniDetail() {
               <div className="space-y-4">
                 <Card className="p-5">
                   <h3 className="text-xs uppercase tracking-wider text-muted-foreground">Contact</h3>
-                  {!canSeeContact ? (
-                    <p className="mt-3 text-sm text-muted-foreground">Connect with this alumni to view their public contact info.</p>
-                  ) : (
-                    <div className="mt-3 space-y-2">
-                      {p.show_email && p.email && <ContactLink href={`mailto:${p.email}`} icon={Mail}>{p.email}</ContactLink>}
-                      {p.show_linkedin && p.linkedin_url && <ContactLink href={p.linkedin_url} icon={Linkedin}>LinkedIn</ContactLink>}
-                      {p.show_website && p.personal_website && <ContactLink href={p.personal_website} icon={Globe}>Website</ContactLink>}
-                      {p.show_facebook && p.facebook_url && <ContactLink href={p.facebook_url} icon={Facebook}>Facebook</ContactLink>}
-                      {p.show_instagram && p.instagram_url && <ContactLink href={p.instagram_url} icon={Instagram}>Instagram</ContactLink>}
-                      {!p.show_email && !p.show_linkedin && !p.show_website && !p.show_facebook && !p.show_instagram && (
-                        <p className="text-xs text-muted-foreground">This alumni has not shared any contact details.</p>
-                      )}
-                    </div>
-                  )}
+                  <div className="mt-3 space-y-2">
+                    {p.email && <ContactLink href={`mailto:${p.email}`} icon={Mail}>{p.email}</ContactLink>}
+                    {p.phone && <ContactLink href={`tel:${p.phone}`} icon={Phone}>{p.phone}</ContactLink>}
+                    {p.linkedin_url && <ContactLink href={p.linkedin_url} icon={Linkedin}>LinkedIn</ContactLink>}
+                    {p.personal_website && <ContactLink href={p.personal_website} icon={Globe}>Website</ContactLink>}
+                    {p.facebook_url && <ContactLink href={p.facebook_url} icon={Facebook}>Facebook</ContactLink>}
+                    {p.instagram_url && <ContactLink href={p.instagram_url} icon={Instagram}>Instagram</ContactLink>}
+                    {!p.email && !p.phone && !p.linkedin_url && !p.personal_website && !p.facebook_url && !p.instagram_url && (
+                      <p className="text-xs text-muted-foreground">This alumni has not shared any contact details.</p>
+                    )}
+                  </div>
                 </Card>
 
                 {data?.mentor?.available_as_mentor && (
@@ -172,55 +140,6 @@ function AlumniDetail() {
         </Card>
       </div>
     </PageShell>
-  );
-}
-
-function ConnectControls({
-  state, pending, onSend, onAccept, onRemove,
-}: {
-  state: ReturnType<typeof useConnectionState>["data"];
-  pending: boolean;
-  onSend: () => void;
-  onAccept: (rowId: string) => void;
-  onRemove: (rowId: string, label: string) => void;
-}) {
-  if (!state || state.kind === "self") return null;
-  if (state.kind === "none") {
-    return (
-      <Button size="sm" onClick={onSend} disabled={pending}>
-        <UserPlus className="mr-1.5 h-4 w-4" /> Connect
-      </Button>
-    );
-  }
-  if (state.kind === "outgoing") {
-    return (
-      <div className="flex gap-2">
-        <Button size="sm" variant="outline" disabled><Clock className="mr-1.5 h-4 w-4" /> Request sent</Button>
-        <Button size="sm" variant="ghost" disabled={pending} onClick={() => onRemove(state.row.id, "Request cancelled")}>
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-    );
-  }
-  if (state.kind === "incoming") {
-    return (
-      <div className="flex gap-2">
-        <Button size="sm" disabled={pending} onClick={() => onAccept(state.row.id)}>
-          <UserCheck className="mr-1.5 h-4 w-4" /> Accept
-        </Button>
-        <Button size="sm" variant="outline" disabled={pending} onClick={() => onRemove(state.row.id, "Request rejected")}>
-          Reject
-        </Button>
-      </div>
-    );
-  }
-  return (
-    <div className="flex gap-2">
-      <Button size="sm" variant="outline" disabled><UserCheck className="mr-1.5 h-4 w-4" /> Connected</Button>
-      <Button size="sm" variant="ghost" disabled={pending} onClick={() => onRemove(state.row.id, "Connection removed")}>
-        Remove
-      </Button>
-    </div>
   );
 }
 

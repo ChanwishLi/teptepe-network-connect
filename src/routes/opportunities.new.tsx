@@ -1,5 +1,7 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { OpportunityPostForm } from "@/components/opportunity-post-form";
 
 export const Route = createFileRoute("/opportunities/new")({
-  component: () => <Navigate to="/internships/new" replace />,
+  head: () => ({ meta: [{ title: "Post an opportunity — TEP-TEPE Alumni Network" }] }),
+  component: OpportunityPostForm,
 });

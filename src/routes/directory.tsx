@@ -58,7 +58,7 @@ function DirectoryPage() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h1 className="font-display text-4xl font-bold lg:text-5xl">Alumni Directory</h1>
-            <p className="mt-2 text-muted-foreground">Connect with fellow TEP-TEPE alumni around the world.</p>
+            <p className="mt-2 text-muted-foreground">Browse fellow TEP-TEPE alumni around the world.</p>
           </div>
         </div>
 

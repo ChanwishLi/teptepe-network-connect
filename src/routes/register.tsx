@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { MAJORS, PROGRAM_TYPES, PARTNER_UNIVERSITIES, GENERATIONS, CONSENT_VERSION, generationStatus, type ProgramType } from "@/lib/constants";
 
@@ -19,7 +20,11 @@ type FormState = {
   first_name: string; last_name: string; preferred_name: string; gender: string; date_of_birth: string; nationality: string;
   email: string; password: string; phone: string; address: string; city: string; province: string; country: string;
   facebook_url: string; instagram_url: string; linkedin_url: string; personal_website: string;
-  student_id: string; program_type: ProgramType | ""; major: string; admission_year: string; graduation_year: string; generation: string; partner_university: string; honors: string;
+  student_id: string; program_type: ProgramType | ""; major: string; admission_year: string; graduation_year: string; generation: string; partner_university: string; partner_degree: string; honors: string;
+  professional_summary: string; skills: string; expertise: string; research_interests: string; certifications: string;
+  company: string; position: string; business_type: string; industry: string; work_city: string; work_country: string; start_year: string; end_year: string; is_current: boolean;
+  edu_level: string; edu_institution: string; edu_major: string; edu_country: string; edu_year: string; edu_organization: string; edu_honors: string;
+  mentor_available: boolean; mentor_hours: string; mentor_contact: string; mentor_areas: string; mentor_industry: string;
   c_data: boolean; c_directory: boolean; c_comms: boolean; c_mentor: boolean;
 };
 
@@ -27,11 +32,15 @@ const initial: FormState = {
   first_name: "", last_name: "", preferred_name: "", gender: "", date_of_birth: "", nationality: "",
   email: "", password: "", phone: "", address: "", city: "", province: "", country: "",
   facebook_url: "", instagram_url: "", linkedin_url: "", personal_website: "",
-  student_id: "", program_type: "", major: "", admission_year: "", graduation_year: "", generation: "", partner_university: "", honors: "",
+  student_id: "", program_type: "", major: "", admission_year: "", graduation_year: "", generation: "", partner_university: "", partner_degree: "bachelor", honors: "",
+  professional_summary: "", skills: "", expertise: "", research_interests: "", certifications: "",
+  company: "", position: "", business_type: "", industry: "", work_city: "", work_country: "", start_year: "", end_year: "", is_current: true,
+  edu_level: "high_school", edu_institution: "", edu_major: "", edu_country: "", edu_year: "", edu_organization: "", edu_honors: "",
+  mentor_available: false, mentor_hours: "", mentor_contact: "", mentor_areas: "", mentor_industry: "",
   c_data: false, c_directory: false, c_comms: false, c_mentor: false,
 };
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 7;
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -43,6 +52,8 @@ function RegisterPage() {
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setF((p) => ({ ...p, [k]: v }));
   const partners = f.program_type ? PARTNER_UNIVERSITIES[f.program_type] : [];
+  const isCert = f.edu_level === "certification";
+  const isHs = f.edu_level === "high_school";
 
   const onAvatarChange = (file: File | null) => {
     setAvatarFile(file);
@@ -55,11 +66,12 @@ function RegisterPage() {
     if (step === 2) return f.email && f.password.length >= 8 && f.country;
     if (step === 3) {
       if (!f.program_type || !f.major || !f.generation || !f.graduation_year || !f.admission_year) return false;
-      if (f.program_type !== "TEPE" && !f.partner_university) return false;
+      if (f.program_type !== "TEPE" && (!f.partner_university || !f.partner_degree)) return false;
       return true;
     }
-    if (step === 4) return f.c_data && f.c_directory;
-    return false;
+    if (step === 5) return !(f.company || f.position) || !!(f.company && f.position);
+    if (step === 7) return f.c_data && f.c_directory;
+    return true;
   };
 
   const next = () => {
@@ -84,7 +96,9 @@ function RegisterPage() {
           facebook_url: f.facebook_url, instagram_url: f.instagram_url, linkedin_url: f.linkedin_url, personal_website: f.personal_website,
           student_id: f.student_id, program_type: f.program_type, major: f.major,
           admission_year: f.admission_year, graduation_year: f.graduation_year, generation: f.generation,
-          partner_university: f.partner_university, honors: f.honors,
+          partner_university: f.partner_university, partner_degree: f.partner_degree, honors: f.honors,
+          professional_summary: f.professional_summary, skills: f.skills, expertise: f.expertise,
+          research_interests: f.research_interests, certifications: f.certifications,
         },
       },
     });
@@ -103,7 +117,35 @@ function RegisterPage() {
         const up = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true, contentType: avatarFile.type });
         const patch: any = { profile_complete: true };
         if (!up.error) patch.avatar_url = path;
-        await supabase.from("profiles").update(patch).eq("id", data.user.id);
+        await supabase.from("profiles").update({
+          ...patch,
+          professional_summary: f.professional_summary || null,
+          skills: parseCsv(f.skills), expertise: parseCsv(f.expertise), research_interests: parseCsv(f.research_interests), certifications: parseCsv(f.certifications),
+        }).eq("id", data.user.id);
+
+        if (f.edu_institution) {
+          const edu: any = { user_id: data.user.id, level: f.edu_level, institution: f.edu_institution, is_mandatory: false };
+          if (isCert) { edu.organization = f.edu_organization || f.edu_institution; edu.year_awarded = f.edu_year ? Number(f.edu_year) : null; }
+          else { edu.major = isHs ? null : f.edu_major || null; edu.country = f.edu_country || null; edu.graduation_year = f.edu_year ? Number(f.edu_year) : null; edu.honors = f.edu_honors || null; }
+          await supabase.from("education_records").insert(edu);
+        }
+        if (f.company && f.position) {
+          await supabase.from("employment_records").insert({
+            user_id: data.user.id, company: f.company, position: f.position,
+            business_type: f.business_type || null, industry: f.industry || null,
+            city: f.work_city || null, country: f.work_country || null,
+            start_year: f.start_year ? Number(f.start_year) : null, end_year: f.is_current ? null : (f.end_year ? Number(f.end_year) : null),
+            is_current: !!f.is_current,
+          });
+        }
+        await supabase.from("mentorship_settings").upsert({
+          user_id: data.user.id,
+          available_as_mentor: !!f.mentor_available,
+          hours_per_month: f.mentor_hours ? Number(f.mentor_hours) : null,
+          preferred_contact_method: f.mentor_contact || null,
+          mentorship_areas: parseCsv(f.mentor_areas),
+          industry_expertise: parseCsv(f.mentor_industry),
+        }, { onConflict: "user_id" });
         await supabase.from("consent_records").insert({
           user_id: data.user.id, consent_version: CONSENT_VERSION,
           data_collection: f.c_data, directory_participation: f.c_directory,
@@ -131,9 +173,9 @@ function RegisterPage() {
           <div className="mb-6">
             <div className="flex items-baseline justify-between">
               <h1 className="font-display text-3xl font-bold">Join TEP-TEPE</h1>
-              <span className="text-xs uppercase tracking-wider text-muted-foreground">Step {step} of 4</span>
+              <span className="text-xs uppercase tracking-wider text-muted-foreground">Step {step} of {TOTAL_STEPS}</span>
             </div>
-            <Progress value={(step / 4) * 100} className="mt-3" />
+            <Progress value={(step / TOTAL_STEPS) * 100} className="mt-3" />
           </div>
 
           {step === 1 && (
@@ -146,7 +188,7 @@ function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={step === 4 ? submit : (e) => { e.preventDefault(); next(); }} className="space-y-4">
+          <form onSubmit={step === TOTAL_STEPS ? submit : (e) => { e.preventDefault(); next(); }} className="space-y-4">
 
             {step === 1 && (
               <>
@@ -218,12 +260,24 @@ function RegisterPage() {
                   </Select>
                 </Field>
                 {f.program_type && f.program_type !== "TEPE" && (
-                  <Field label="Partner university *">
-                    <Select value={f.partner_university} onValueChange={(v) => set("partner_university", v)}>
-                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{partners.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </Field>
+                  <Grid2>
+                    <Field label="Partner university *">
+                      <Select value={f.partner_university} onValueChange={(v) => set("partner_university", v)}>
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent>{partners.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="Partner university degree *">
+                      <Select value={f.partner_degree} onValueChange={(v) => set("partner_degree", v)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="bachelor">Bachelor's Degree</SelectItem>
+                          <SelectItem value="master">Master's Degree</SelectItem>
+                          <SelectItem value="phd">Doctoral Degree (PhD)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </Grid2>
                 )}
                 <Grid2><Field label="Admission year *"><Input type="number" min={1995} max={2030} value={f.admission_year} onChange={(e) => set("admission_year", e.target.value)} required /></Field>
                 <Field label="Graduation year *"><Input type="number" min={1999} max={2035} value={f.graduation_year} onChange={(e) => set("graduation_year", e.target.value)} required /></Field></Grid2>
@@ -233,18 +287,67 @@ function RegisterPage() {
                   {f.program_type === "TEPE" && <div>• Bachelor's Degree — Thammasat University ({f.major || "major"}{f.graduation_year ? `, ${f.graduation_year}` : ""}{f.honors ? `, ${f.honors}` : ""})</div>}
                   {f.program_type === "TEP" && (<>
                     <div>• Bachelor's Degree — Thammasat University ({f.major || "major"}{f.graduation_year ? `, ${f.graduation_year}` : ""}{f.honors ? `, ${f.honors}` : ""})</div>
-                    <div>• Bachelor's Degree — {f.partner_university || "Partner University"}</div>
+                    <div>• {degreeLabel(f.partner_degree)} — {f.partner_university || "Partner University"}</div>
                   </>)}
                   {f.program_type === "TEPE+" && (<>
                     <div>• Bachelor's Degree — Thammasat University ({f.major || "major"}{f.graduation_year ? `, ${f.graduation_year}` : ""}{f.honors ? `, ${f.honors}` : ""})</div>
-                    <div>• Master's Degree — {f.partner_university || "Partner University"}</div>
+                    <div>• {degreeLabel(f.partner_degree)} — {f.partner_university || "Partner University"}</div>
                   </>)}
-                  <div className="pt-1">These records cannot be deleted. You can add high school, additional degrees, and certifications later from your profile.</div>
+                  <div className="pt-1">These records cannot be deleted. You can add additional education in the next steps.</div>
                 </div>
               </>
             )}
 
             {step === 4 && (
+              <>
+                <h2 className="font-display text-lg font-semibold">Professional profile</h2>
+                <Field label="Professional summary"><Textarea rows={4} value={f.professional_summary} onChange={(e) => set("professional_summary", e.target.value)} /></Field>
+                <Grid2>
+                  <Field label="Skills (comma separated)"><Input value={f.skills} onChange={(e) => set("skills", e.target.value)} /></Field>
+                  <Field label="Expertise (comma separated)"><Input value={f.expertise} onChange={(e) => set("expertise", e.target.value)} /></Field>
+                  <Field label="Research interests"><Input value={f.research_interests} onChange={(e) => set("research_interests", e.target.value)} /></Field>
+                  <Field label="Certifications"><Input value={f.certifications} onChange={(e) => set("certifications", e.target.value)} /></Field>
+                </Grid2>
+              </>
+            )}
+
+            {step === 5 && (
+              <>
+                <h2 className="font-display text-lg font-semibold">Professional record</h2>
+                <Grid2>
+                  <Field label="Company"><Input value={f.company} onChange={(e) => set("company", e.target.value)} /></Field>
+                  <Field label="Position"><Input value={f.position} onChange={(e) => set("position", e.target.value)} /></Field>
+                  <Field label="Business type"><Input value={f.business_type} onChange={(e) => set("business_type", e.target.value)} /></Field>
+                  <Field label="Industry"><Input value={f.industry} onChange={(e) => set("industry", e.target.value)} /></Field>
+                  <Field label="City"><Input value={f.work_city} onChange={(e) => set("work_city", e.target.value)} /></Field>
+                  <Field label="Country"><Input value={f.work_country} onChange={(e) => set("work_country", e.target.value)} /></Field>
+                  <Field label="Start year"><Input type="number" value={f.start_year} onChange={(e) => set("start_year", e.target.value)} /></Field>
+                  {!f.is_current && <Field label="End year"><Input type="number" value={f.end_year} onChange={(e) => set("end_year", e.target.value)} /></Field>}
+                </Grid2>
+                <CheckRow checked={f.is_current} onChange={(v) => set("is_current", v)} label="This is my current role" />
+
+                <h2 className="pt-4 font-display text-lg font-semibold">Additional education</h2>
+                <Field label="Type"><Select value={f.edu_level} onValueChange={(v) => set("edu_level", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="high_school">High School</SelectItem><SelectItem value="bachelor">Bachelor's Degree</SelectItem><SelectItem value="master">Master's Degree</SelectItem><SelectItem value="phd">Doctoral Degree (PhD)</SelectItem><SelectItem value="certification">Professional Certification</SelectItem></SelectContent></Select></Field>
+                <Grid2>
+                  <Field label={isCert ? "Certification name" : isHs ? "School name" : "University"}><Input value={f.edu_institution} onChange={(e) => set("edu_institution", e.target.value)} /></Field>
+                  {isCert && <Field label="Issuing organization"><Input value={f.edu_organization} onChange={(e) => set("edu_organization", e.target.value)} /></Field>}
+                  {!isCert && !isHs && <Field label="Major"><Input value={f.edu_major} onChange={(e) => set("edu_major", e.target.value)} /></Field>}
+                  {!isCert && <Field label="Country"><Input value={f.edu_country} onChange={(e) => set("edu_country", e.target.value)} /></Field>}
+                  <Field label={isCert ? "Year awarded" : "Graduation year"}><Input type="number" value={f.edu_year} onChange={(e) => set("edu_year", e.target.value)} /></Field>
+                  {!isCert && !isHs && <Field label="Honors"><Input value={f.edu_honors} onChange={(e) => set("edu_honors", e.target.value)} /></Field>}
+                </Grid2>
+              </>
+            )}
+
+            {step === 6 && (
+              <>
+                <h2 className="font-display text-lg font-semibold">Mentorship availability</h2>
+                <CheckRow checked={f.mentor_available} onChange={(v) => { set("mentor_available", v); if (v) set("c_mentor", true); }} label="Available as a mentor" />
+                {f.mentor_available && <Grid2><Field label="Hours per month"><Input type="number" value={f.mentor_hours} onChange={(e) => set("mentor_hours", e.target.value)} /></Field><Field label="Preferred contact method"><Input value={f.mentor_contact} onChange={(e) => set("mentor_contact", e.target.value)} /></Field><Field label="Mentorship areas"><Input value={f.mentor_areas} onChange={(e) => set("mentor_areas", e.target.value)} /></Field><Field label="Industry expertise"><Input value={f.mentor_industry} onChange={(e) => set("mentor_industry", e.target.value)} /></Field></Grid2>}
+              </>
+            )}
+
+            {step === 7 && (
               <>
                 <h2 className="font-display text-lg font-semibold">PDPA consent</h2>
                 <p className="text-sm text-muted-foreground">Under Thailand's Personal Data Protection Act, please review and consent to the following. You may withdraw consent at any time.</p>
@@ -257,7 +360,7 @@ function RegisterPage() {
 
             <div className="flex justify-between pt-4">
               {step > 1 ? <Button type="button" variant="ghost" onClick={() => setStep((s) => s - 1)}>Back</Button> : <span />}
-              <Button type="submit" disabled={loading}>{step === 4 ? (loading ? "Creating…" : "Create account") : "Continue"}</Button>
+              <Button type="submit" disabled={loading}>{step === TOTAL_STEPS ? (loading ? "Creating…" : "Create account") : "Continue"}</Button>
             </div>
           </form>
 
@@ -274,6 +377,9 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   return (<div><Label className="mb-1.5 block">{label}</Label>{children}{hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}</div>);
 }
 function Grid2({ children }: { children: React.ReactNode }) { return <div className="grid gap-4 sm:grid-cols-2">{children}</div>; }
+function CheckRow({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+  return <label className="flex cursor-pointer items-center gap-3 rounded-md border border-border p-4 text-sm hover:bg-muted/40"><Checkbox checked={checked} onCheckedChange={(v) => onChange(!!v)} />{label}</label>;
+}
 function ConsentRow({ checked, onChange, label, desc }: { checked: boolean; onChange: (v: boolean) => void; label: string; desc: string }) {
   return (
     <label className="flex items-start gap-3 rounded-md border border-border p-4 cursor-pointer hover:bg-muted/40">
@@ -281,4 +387,10 @@ function ConsentRow({ checked, onChange, label, desc }: { checked: boolean; onCh
       <div><div className="text-sm font-medium">{label}</div><div className="text-xs text-muted-foreground">{desc}</div></div>
     </label>
   );
+}
+function parseCsv(v: string): string[] { return v.split(",").map((s) => s.trim()).filter(Boolean); }
+function degreeLabel(v: string) {
+  if (v === "master") return "Master's Degree";
+  if (v === "phd") return "Doctoral Degree (PhD)";
+  return "Bachelor's Degree";
 }
