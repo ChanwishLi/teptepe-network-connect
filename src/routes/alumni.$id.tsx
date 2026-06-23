@@ -119,7 +119,7 @@ function AlumniDetail() {
                     {!p.email && !p.phone && !p.linkedin_url && !p.personal_website && !p.facebook_url && !p.instagram_url && (
                       <p className="text-xs text-muted-foreground">This alumni has not shared any contact details.</p>
                     )}
-                  )}
+                  </div>
                 </Card>
 
                 {data?.mentor?.available_as_mentor && (
@@ -140,55 +140,6 @@ function AlumniDetail() {
         </Card>
       </div>
     </PageShell>
-  );
-}
-
-function ConnectControls({
-  state, pending, onSend, onAccept, onRemove,
-}: {
-  state: ReturnType<typeof useConnectionState>["data"];
-  pending: boolean;
-  onSend: () => void;
-  onAccept: (rowId: string) => void;
-  onRemove: (rowId: string, label: string) => void;
-}) {
-  if (!state || state.kind === "self") return null;
-  if (state.kind === "none") {
-    return (
-      <Button size="sm" onClick={onSend} disabled={pending}>
-        <UserPlus className="mr-1.5 h-4 w-4" /> Connect
-      </Button>
-    );
-  }
-  if (state.kind === "outgoing") {
-    return (
-      <div className="flex gap-2">
-        <Button size="sm" variant="outline" disabled><Clock className="mr-1.5 h-4 w-4" /> Request sent</Button>
-        <Button size="sm" variant="ghost" disabled={pending} onClick={() => onRemove(state.row.id, "Request cancelled")}>
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-    );
-  }
-  if (state.kind === "incoming") {
-    return (
-      <div className="flex gap-2">
-        <Button size="sm" disabled={pending} onClick={() => onAccept(state.row.id)}>
-          <UserCheck className="mr-1.5 h-4 w-4" /> Accept
-        </Button>
-        <Button size="sm" variant="outline" disabled={pending} onClick={() => onRemove(state.row.id, "Request rejected")}>
-          Reject
-        </Button>
-      </div>
-    );
-  }
-  return (
-    <div className="flex gap-2">
-      <Button size="sm" variant="outline" disabled><UserCheck className="mr-1.5 h-4 w-4" /> Connected</Button>
-      <Button size="sm" variant="ghost" disabled={pending} onClick={() => onRemove(state.row.id, "Connection removed")}>
-        Remove
-      </Button>
-    </div>
   );
 }
 

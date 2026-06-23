@@ -15,7 +15,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { } from "lucide-react";
 import { toast } from "sonner";
 import { useAvatarUrl } from "@/lib/avatar";
 
@@ -193,7 +192,6 @@ function ProfilePage() {
             <TabsTrigger value="info">Personal</TabsTrigger>
             <TabsTrigger value="prof">Professional</TabsTrigger>
             <TabsTrigger value="edu">Education</TabsTrigger>
-            <TabsTrigger value="vis">Visibility</TabsTrigger>
             <TabsTrigger value="mentor">Mentor</TabsTrigger>
           </TabsList>
 
@@ -277,19 +275,6 @@ function ProfilePage() {
                   ))}
                 </div>
               </div>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="vis">
-            <Card className="p-6 space-y-4">
-              <p className="text-sm text-muted-foreground">Choose which contact details other authenticated alumni can see on your profile.</p>
-              <Toggle label="Show email" value={!!form.show_email} onChange={(v) => setForm({ ...form, show_email: v })} />
-              <Toggle label="Show phone" value={!!form.show_phone} onChange={(v) => setForm({ ...form, show_phone: v })} />
-              <Toggle label="Show LinkedIn" value={!!form.show_linkedin} onChange={(v) => setForm({ ...form, show_linkedin: v })} />
-              <Toggle label="Show personal website" value={!!form.show_website} onChange={(v) => setForm({ ...form, show_website: v })} />
-              <Toggle label="Show Facebook" value={!!form.show_facebook} onChange={(v) => setForm({ ...form, show_facebook: v })} />
-              <Toggle label="Show Instagram" value={!!form.show_instagram} onChange={(v) => setForm({ ...form, show_instagram: v })} />
-              <SaveBtn pending={saveProfile.isPending} onClick={() => saveProfile.mutate()} />
             </Card>
           </TabsContent>
 
