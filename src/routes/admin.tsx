@@ -154,7 +154,35 @@ function MembersAdmin() {
 }
 
 /* ---------- Generic CRUD shell ---------- */
-type Field = { name: string; label: string; type?: "text" | "textarea" | "date" | "number" | "url" | "switch"; rows?: number };
+type Field = { name: string; label: string; type?: "text" | "textarea" | "date" | "number" | "url" | "switch" | "image"; rows?: number; hint?: string };
+
+function ImageUploadField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const handleFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const path = `uploads/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
+      if (error) throw error;
+      const { data } = supabase.storage.from("media").getPublicUrl(path);
+      onChange(data.publicUrl);
+      toast.success("Image uploaded");
+    } catch (e: any) { toast.error(e.message); }
+    finally { setUploading(false); }
+  };
+  return (
+    <div className="space-y-2">
+      {value && <img src={value} alt="" className="h-32 w-full rounded-md object-cover border border-border" />}
+      <div className="flex items-center gap-2">
+        <Input type="file" accept="image/*" disabled={uploading} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+        {value && <Button type="button" size="sm" variant="ghost" onClick={() => onChange("")}>Clear</Button>}
+      </div>
+      <Input placeholder="…or paste an image URL" value={value} onChange={(e) => onChange(e.target.value)} />
+      {uploading && <div className="text-xs text-muted-foreground">Uploading…</div>}
+    </div>
+  );
+}
 
 function CrudSection<T extends { id: string }>({
   title, table, fields, listColumns, defaultRow, orderBy = "created_at",
