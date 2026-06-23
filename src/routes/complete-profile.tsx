@@ -281,10 +281,17 @@ function CompleteProfilePage() {
                 </Select>
               </div>
               {f.program_type && f.program_type !== "TEPE" && (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div><Label>Partner university *</Label><Select value={f.partner_university} onValueChange={(v) => setF({ ...f, partner_university: v })}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{partners.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent></Select></div>
-                  <div><Label>Partner university degree *</Label><Select value={f.partner_degree} onValueChange={(v) => setF({ ...f, partner_degree: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="bachelor">Bachelor's Degree</SelectItem><SelectItem value="master">Master's Degree</SelectItem><SelectItem value="phd">Doctoral Degree (PhD)</SelectItem></SelectContent></Select></div>
-                </div>
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div><Label>Partner university *</Label><Select value={f.partner_university} onValueChange={(v) => setF({ ...f, partner_university: v })}><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent>{partners.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent></Select></div>
+                    <div><Label>Partner degree level *</Label><Select value={f.partner_degree} onValueChange={(v) => setF({ ...f, partner_degree: v })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="bachelor">Bachelor's Degree</SelectItem><SelectItem value="master">Master's Degree</SelectItem><SelectItem value="phd">Doctoral Degree (PhD)</SelectItem></SelectContent></Select></div>
+                  </div>
+                  <div>
+                    <Label>Partner degree program / major</Label>
+                    <Input value={f.partner_major} onChange={(e) => setF({ ...f, partner_major: e.target.value })} placeholder="e.g. Electronics Engineering (KU Leuven)" />
+                    <p className="mt-1 text-xs text-muted-foreground">This can be different from your Thammasat major.</p>
+                  </div>
+                </>
               )}
               <div>
                 <Label>Generation *</Label>
