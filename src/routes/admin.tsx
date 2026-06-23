@@ -94,7 +94,7 @@ function InternshipApprovals() {
             <div>
               <div className="font-display text-lg font-semibold">{p.position} <span className="text-muted-foreground font-normal">· {p.company_name}</span></div>
               <div className="mt-1 text-xs text-muted-foreground">{p.employment_type} · {p.location ?? "—"} · contact: {p.contact_email ?? "—"}</div>
-              <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{p.description}</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{p.description}</p>
             </div>
             <Badge variant="outline">{p.status}</Badge>
           </div>
