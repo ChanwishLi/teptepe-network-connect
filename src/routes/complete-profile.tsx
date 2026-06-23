@@ -32,13 +32,18 @@ function CompleteProfilePage() {
     phone: "", address: "", city: "", province: "", country: "",
     facebook_url: "", instagram_url: "", linkedin_url: "", personal_website: "",
     student_id: "", program_type: "" as ProgramType | "", major: "", admission_year: "", graduation_year: "",
-    generation: "", partner_university: "", partner_degree: "bachelor", honors: "",
+    generation: "", partner_university: "", partner_degree: "bachelor", partner_major: "", honors: "",
     professional_summary: "", skills: "", expertise: "", research_interests: "", certifications: "",
     company: "", position: "", business_type: "", industry: "", work_city: "", work_country: "", start_year: "", end_year: "", is_current: true,
-    edu_level: "high_school", edu_institution: "", edu_major: "", edu_country: "", edu_year: "", edu_organization: "", edu_honors: "",
+    educations: [] as Array<{ level: string; institution: string; major: string; country: string; year: string; organization: string; honors: string }>,
     mentor_available: false, mentor_hours: "", mentor_contact: "", mentor_areas: "", mentor_industry: "",
     c_data: false, c_directory: false, c_comms: false, c_mentor: false,
   });
+
+  const blankEdu = () => ({ level: "high_school", institution: "", major: "", country: "", year: "", organization: "", honors: "" });
+  const updateEdu = (i: number, patch: any) => setF((p: any) => ({ ...p, educations: p.educations.map((e: any, idx: number) => idx === i ? { ...e, ...patch } : e) }));
+  const addEdu = () => setF((p: any) => ({ ...p, educations: [...p.educations, blankEdu()] }));
+  const removeEdu = (i: number) => setF((p: any) => ({ ...p, educations: p.educations.filter((_: any, idx: number) => idx !== i) }));
 
   useEffect(() => { if (!loading && !user) navigate({ to: "/login" }); }, [loading, user, navigate]);
 
