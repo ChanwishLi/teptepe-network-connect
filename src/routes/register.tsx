@@ -16,14 +16,17 @@ import { MAJORS, PROGRAM_TYPES, PARTNER_UNIVERSITIES, GENERATIONS, CONSENT_VERSI
 
 export const Route = createFileRoute("/register")({ component: RegisterPage });
 
+type EduEntry = { level: string; institution: string; major: string; country: string; year: string; organization: string; honors: string };
+const blankEdu = (): EduEntry => ({ level: "high_school", institution: "", major: "", country: "", year: "", organization: "", honors: "" });
+
 type FormState = {
   first_name: string; last_name: string; preferred_name: string; gender: string; date_of_birth: string; nationality: string;
   email: string; password: string; phone: string; address: string; city: string; province: string; country: string;
   facebook_url: string; instagram_url: string; linkedin_url: string; personal_website: string;
-  student_id: string; program_type: ProgramType | ""; major: string; admission_year: string; graduation_year: string; generation: string; partner_university: string; partner_degree: string; honors: string;
+  student_id: string; program_type: ProgramType | ""; major: string; admission_year: string; graduation_year: string; generation: string; partner_university: string; partner_degree: string; partner_major: string; honors: string;
   professional_summary: string; skills: string; expertise: string; research_interests: string; certifications: string;
   company: string; position: string; business_type: string; industry: string; work_city: string; work_country: string; start_year: string; end_year: string; is_current: boolean;
-  edu_level: string; edu_institution: string; edu_major: string; edu_country: string; edu_year: string; edu_organization: string; edu_honors: string;
+  educations: EduEntry[];
   mentor_available: boolean; mentor_hours: string; mentor_contact: string; mentor_areas: string; mentor_industry: string;
   c_data: boolean; c_directory: boolean; c_comms: boolean; c_mentor: boolean;
 };
@@ -32,10 +35,10 @@ const initial: FormState = {
   first_name: "", last_name: "", preferred_name: "", gender: "", date_of_birth: "", nationality: "",
   email: "", password: "", phone: "", address: "", city: "", province: "", country: "",
   facebook_url: "", instagram_url: "", linkedin_url: "", personal_website: "",
-  student_id: "", program_type: "", major: "", admission_year: "", graduation_year: "", generation: "", partner_university: "", partner_degree: "bachelor", honors: "",
+  student_id: "", program_type: "", major: "", admission_year: "", graduation_year: "", generation: "", partner_university: "", partner_degree: "bachelor", partner_major: "", honors: "",
   professional_summary: "", skills: "", expertise: "", research_interests: "", certifications: "",
   company: "", position: "", business_type: "", industry: "", work_city: "", work_country: "", start_year: "", end_year: "", is_current: true,
-  edu_level: "high_school", edu_institution: "", edu_major: "", edu_country: "", edu_year: "", edu_organization: "", edu_honors: "",
+  educations: [],
   mentor_available: false, mentor_hours: "", mentor_contact: "", mentor_areas: "", mentor_industry: "",
   c_data: false, c_directory: false, c_comms: false, c_mentor: false,
 };
