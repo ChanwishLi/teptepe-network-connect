@@ -173,9 +173,9 @@ function RegisterPage() {
           <div className="mb-6">
             <div className="flex items-baseline justify-between">
               <h1 className="font-display text-3xl font-bold">Join TEP-TEPE</h1>
-              <span className="text-xs uppercase tracking-wider text-muted-foreground">Step {step} of 4</span>
+              <span className="text-xs uppercase tracking-wider text-muted-foreground">Step {step} of {TOTAL_STEPS}</span>
             </div>
-            <Progress value={(step / 4) * 100} className="mt-3" />
+            <Progress value={(step / TOTAL_STEPS) * 100} className="mt-3" />
           </div>
 
           {step === 1 && (
@@ -188,7 +188,7 @@ function RegisterPage() {
             </div>
           )}
 
-          <form onSubmit={step === 4 ? submit : (e) => { e.preventDefault(); next(); }} className="space-y-4">
+          <form onSubmit={step === TOTAL_STEPS ? submit : (e) => { e.preventDefault(); next(); }} className="space-y-4">
 
             {step === 1 && (
               <>
@@ -260,12 +260,24 @@ function RegisterPage() {
                   </Select>
                 </Field>
                 {f.program_type && f.program_type !== "TEPE" && (
-                  <Field label="Partner university *">
-                    <Select value={f.partner_university} onValueChange={(v) => set("partner_university", v)}>
-                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>{partners.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </Field>
+                  <Grid2>
+                    <Field label="Partner university *">
+                      <Select value={f.partner_university} onValueChange={(v) => set("partner_university", v)}>
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent>{partners.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="Partner university degree *">
+                      <Select value={f.partner_degree} onValueChange={(v) => set("partner_degree", v)}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="bachelor">Bachelor's Degree</SelectItem>
+                          <SelectItem value="master">Master's Degree</SelectItem>
+                          <SelectItem value="phd">Doctoral Degree (PhD)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </Grid2>
                 )}
                 <Grid2><Field label="Admission year *"><Input type="number" min={1995} max={2030} value={f.admission_year} onChange={(e) => set("admission_year", e.target.value)} required /></Field>
                 <Field label="Graduation year *"><Input type="number" min={1999} max={2035} value={f.graduation_year} onChange={(e) => set("graduation_year", e.target.value)} required /></Field></Grid2>
@@ -275,18 +287,67 @@ function RegisterPage() {
                   {f.program_type === "TEPE" && <div>• Bachelor's Degree — Thammasat University ({f.major || "major"}{f.graduation_year ? `, ${f.graduation_year}` : ""}{f.honors ? `, ${f.honors}` : ""})</div>}
                   {f.program_type === "TEP" && (<>
                     <div>• Bachelor's Degree — Thammasat University ({f.major || "major"}{f.graduation_year ? `, ${f.graduation_year}` : ""}{f.honors ? `, ${f.honors}` : ""})</div>
-                    <div>• Bachelor's Degree — {f.partner_university || "Partner University"}</div>
+                    <div>• {degreeLabel(f.partner_degree)} — {f.partner_university || "Partner University"}</div>
                   </>)}
                   {f.program_type === "TEPE+" && (<>
                     <div>• Bachelor's Degree — Thammasat University ({f.major || "major"}{f.graduation_year ? `, ${f.graduation_year}` : ""}{f.honors ? `, ${f.honors}` : ""})</div>
-                    <div>• Master's Degree — {f.partner_university || "Partner University"}</div>
+                    <div>• {degreeLabel(f.partner_degree)} — {f.partner_university || "Partner University"}</div>
                   </>)}
-                  <div className="pt-1">These records cannot be deleted. You can add high school, additional degrees, and certifications later from your profile.</div>
+                  <div className="pt-1">These records cannot be deleted. You can add additional education in the next steps.</div>
                 </div>
               </>
             )}
 
             {step === 4 && (
+              <>
+                <h2 className="font-display text-lg font-semibold">Professional profile</h2>
+                <Field label="Professional summary"><Textarea rows={4} value={f.professional_summary} onChange={(e) => set("professional_summary", e.target.value)} /></Field>
+                <Grid2>
+                  <Field label="Skills (comma separated)"><Input value={f.skills} onChange={(e) => set("skills", e.target.value)} /></Field>
+                  <Field label="Expertise (comma separated)"><Input value={f.expertise} onChange={(e) => set("expertise", e.target.value)} /></Field>
+                  <Field label="Research interests"><Input value={f.research_interests} onChange={(e) => set("research_interests", e.target.value)} /></Field>
+                  <Field label="Certifications"><Input value={f.certifications} onChange={(e) => set("certifications", e.target.value)} /></Field>
+                </Grid2>
+              </>
+            )}
+
+            {step === 5 && (
+              <>
+                <h2 className="font-display text-lg font-semibold">Professional record</h2>
+                <Grid2>
+                  <Field label="Company"><Input value={f.company} onChange={(e) => set("company", e.target.value)} /></Field>
+                  <Field label="Position"><Input value={f.position} onChange={(e) => set("position", e.target.value)} /></Field>
+                  <Field label="Business type"><Input value={f.business_type} onChange={(e) => set("business_type", e.target.value)} /></Field>
+                  <Field label="Industry"><Input value={f.industry} onChange={(e) => set("industry", e.target.value)} /></Field>
+                  <Field label="City"><Input value={f.work_city} onChange={(e) => set("work_city", e.target.value)} /></Field>
+                  <Field label="Country"><Input value={f.work_country} onChange={(e) => set("work_country", e.target.value)} /></Field>
+                  <Field label="Start year"><Input type="number" value={f.start_year} onChange={(e) => set("start_year", e.target.value)} /></Field>
+                  {!f.is_current && <Field label="End year"><Input type="number" value={f.end_year} onChange={(e) => set("end_year", e.target.value)} /></Field>}
+                </Grid2>
+                <CheckRow checked={f.is_current} onChange={(v) => set("is_current", v)} label="This is my current role" />
+
+                <h2 className="pt-4 font-display text-lg font-semibold">Additional education</h2>
+                <Field label="Type"><Select value={f.edu_level} onValueChange={(v) => set("edu_level", v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="high_school">High School</SelectItem><SelectItem value="bachelor">Bachelor's Degree</SelectItem><SelectItem value="master">Master's Degree</SelectItem><SelectItem value="phd">Doctoral Degree (PhD)</SelectItem><SelectItem value="certification">Professional Certification</SelectItem></SelectContent></Select></Field>
+                <Grid2>
+                  <Field label={isCert ? "Certification name" : isHs ? "School name" : "University"}><Input value={f.edu_institution} onChange={(e) => set("edu_institution", e.target.value)} /></Field>
+                  {isCert && <Field label="Issuing organization"><Input value={f.edu_organization} onChange={(e) => set("edu_organization", e.target.value)} /></Field>}
+                  {!isCert && !isHs && <Field label="Major"><Input value={f.edu_major} onChange={(e) => set("edu_major", e.target.value)} /></Field>}
+                  {!isCert && <Field label="Country"><Input value={f.edu_country} onChange={(e) => set("edu_country", e.target.value)} /></Field>}
+                  <Field label={isCert ? "Year awarded" : "Graduation year"}><Input type="number" value={f.edu_year} onChange={(e) => set("edu_year", e.target.value)} /></Field>
+                  {!isCert && !isHs && <Field label="Honors"><Input value={f.edu_honors} onChange={(e) => set("edu_honors", e.target.value)} /></Field>}
+                </Grid2>
+              </>
+            )}
+
+            {step === 6 && (
+              <>
+                <h2 className="font-display text-lg font-semibold">Mentorship availability</h2>
+                <CheckRow checked={f.mentor_available} onChange={(v) => { set("mentor_available", v); if (v) set("c_mentor", true); }} label="Available as a mentor" />
+                {f.mentor_available && <Grid2><Field label="Hours per month"><Input type="number" value={f.mentor_hours} onChange={(e) => set("mentor_hours", e.target.value)} /></Field><Field label="Preferred contact method"><Input value={f.mentor_contact} onChange={(e) => set("mentor_contact", e.target.value)} /></Field><Field label="Mentorship areas"><Input value={f.mentor_areas} onChange={(e) => set("mentor_areas", e.target.value)} /></Field><Field label="Industry expertise"><Input value={f.mentor_industry} onChange={(e) => set("mentor_industry", e.target.value)} /></Field></Grid2>}
+              </>
+            )}
+
+            {step === 7 && (
               <>
                 <h2 className="font-display text-lg font-semibold">PDPA consent</h2>
                 <p className="text-sm text-muted-foreground">Under Thailand's Personal Data Protection Act, please review and consent to the following. You may withdraw consent at any time.</p>
@@ -299,7 +360,7 @@ function RegisterPage() {
 
             <div className="flex justify-between pt-4">
               {step > 1 ? <Button type="button" variant="ghost" onClick={() => setStep((s) => s - 1)}>Back</Button> : <span />}
-              <Button type="submit" disabled={loading}>{step === 4 ? (loading ? "Creating…" : "Create account") : "Continue"}</Button>
+              <Button type="submit" disabled={loading}>{step === TOTAL_STEPS ? (loading ? "Creating…" : "Create account") : "Continue"}</Button>
             </div>
           </form>
 
