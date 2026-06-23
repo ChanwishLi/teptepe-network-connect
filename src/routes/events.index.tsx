@@ -5,7 +5,7 @@ import { PageShell } from "@/components/site-shell";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 
-export const Route = createFileRoute("/events")({
+export const Route = createFileRoute("/events/")({
   head: () => ({
     meta: [
       { title: "Events — TEP-TEPE Alumni Network" },

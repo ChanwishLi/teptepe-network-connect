@@ -5,7 +5,7 @@ import { PageShell } from "@/components/site-shell";
 import { Card } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
 
-export const Route = createFileRoute("/stories")({
+export const Route = createFileRoute("/stories/")({
   head: () => ({ meta: [{ title: "Success Stories — TEP-TEPE Alumni Network" }] }),
   component: StoriesPage,
 });

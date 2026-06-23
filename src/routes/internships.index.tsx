@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Briefcase, Plus } from "lucide-react";
 import { EMPLOYMENT_TYPE_LABELS } from "@/lib/constants";
 
-export const Route = createFileRoute("/internships")({
+export const Route = createFileRoute("/internships/")({
   head: () => ({
     meta: [
       { title: "Internships & Jobs — TEP-TEPE Alumni Network" },
