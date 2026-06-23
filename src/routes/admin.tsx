@@ -246,6 +246,8 @@ function CrudSection<T extends { id: string }>({
                     <Textarea rows={f.rows ?? 4} value={editing?.[f.name] ?? ""} onChange={(e) => setEditing({ ...editing, [f.name]: e.target.value })} />
                   ) : f.type === "switch" ? (
                     <Switch checked={!!editing?.[f.name]} onCheckedChange={(v) => setEditing({ ...editing, [f.name]: v })} />
+                  ) : f.type === "image" ? (
+                    <ImageUploadField value={editing?.[f.name] ?? ""} onChange={(v) => setEditing({ ...editing, [f.name]: v })} />
                   ) : (
                     <Input type={f.type ?? "text"} value={editing?.[f.name] ?? ""} onChange={(e) => setEditing({ ...editing, [f.name]: f.type === "number" ? Number(e.target.value) : e.target.value })} />
                   )}
