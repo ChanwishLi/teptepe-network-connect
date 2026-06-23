@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
@@ -15,10 +15,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Users, UserCheck, Clock } from "lucide-react";
+import { } from "lucide-react";
 import { toast } from "sonner";
 import { useAvatarUrl } from "@/lib/avatar";
-import { useMyConnections, useConnectionActions, useConnectionCount } from "@/lib/connections";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "My Profile — TEP-TEPE Alumni Network" }] }),
@@ -82,7 +81,6 @@ function ProfilePage() {
   useEffect(() => { if (mentorship) setMent(mentorship); }, [mentorship]);
 
   const avatarUrl = useAvatarUrl(profile?.avatar_url);
-  const { data: connCount } = useConnectionCount(user?.id);
 
   const uploadAvatar = useMutation({
     mutationFn: async (file: File) => {
@@ -177,9 +175,6 @@ function ProfilePage() {
             <p className="mt-1 text-sm text-muted-foreground">
               {profile.program_type ? `${profile.program_type} #${profile.generation}` : "Profile incomplete"} · {user.email}
             </p>
-            <div className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Users className="h-3.5 w-3.5" /> {connCount ?? 0} {connCount === 1 ? "connection" : "connections"}
-            </div>
             {(!profile.program_type || !profile.generation || !profile.major) && (
               <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
                 <strong>Complete your profile.</strong> Please fill in your program, generation, and major below so you can be approved and appear in the directory.
@@ -200,12 +195,7 @@ function ProfilePage() {
             <TabsTrigger value="edu">Education</TabsTrigger>
             <TabsTrigger value="vis">Visibility</TabsTrigger>
             <TabsTrigger value="mentor">Mentor</TabsTrigger>
-            <TabsTrigger value="conn">Connections</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="conn">
-            <ConnectionsPanel />
-          </TabsContent>
 
           <TabsContent value="info">
             <Card className="p-6">
