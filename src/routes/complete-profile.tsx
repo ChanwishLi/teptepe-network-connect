@@ -77,6 +77,7 @@ function CompleteProfilePage() {
         graduation_year: data.graduation_year ?? "",
         generation: data.generation ?? "",
         partner_university: data.partner_university || "",
+        partner_major: data.partner_major || "",
         professional_summary: data.professional_summary || "",
         skills: csv(data.skills),
         expertise: csv(data.expertise),
