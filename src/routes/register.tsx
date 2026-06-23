@@ -269,24 +269,29 @@ function RegisterPage() {
                   </Select>
                 </Field>
                 {f.program_type && f.program_type !== "TEPE" && (
-                  <Grid2>
-                    <Field label="Partner university *">
-                      <Select value={f.partner_university} onValueChange={(v) => set("partner_university", v)}>
-                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                        <SelectContent>{partners.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
-                      </Select>
+                  <>
+                    <Grid2>
+                      <Field label="Partner university *">
+                        <Select value={f.partner_university} onValueChange={(v) => set("partner_university", v)}>
+                          <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                          <SelectContent>{partners.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </Field>
+                      <Field label="Partner degree level *">
+                        <Select value={f.partner_degree} onValueChange={(v) => set("partner_degree", v)}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="bachelor">Bachelor's Degree</SelectItem>
+                            <SelectItem value="master">Master's Degree</SelectItem>
+                            <SelectItem value="phd">Doctoral Degree (PhD)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                    </Grid2>
+                    <Field label="Partner degree program / major" hint="e.g. Electronics Engineering at KU Leuven (may differ from your Thammasat major)">
+                      <Input value={f.partner_major} onChange={(e) => set("partner_major", e.target.value)} />
                     </Field>
-                    <Field label="Partner university degree *">
-                      <Select value={f.partner_degree} onValueChange={(v) => set("partner_degree", v)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="bachelor">Bachelor's Degree</SelectItem>
-                          <SelectItem value="master">Master's Degree</SelectItem>
-                          <SelectItem value="phd">Doctoral Degree (PhD)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </Field>
-                  </Grid2>
+                  </>
                 )}
                 <Grid2><Field label="Admission year *"><Input type="number" min={1995} max={2030} value={f.admission_year} onChange={(e) => set("admission_year", e.target.value)} required /></Field>
                 <Field label="Graduation year *"><Input type="number" min={1999} max={2035} value={f.graduation_year} onChange={(e) => set("graduation_year", e.target.value)} required /></Field></Grid2>
