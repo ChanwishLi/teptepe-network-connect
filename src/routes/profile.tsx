@@ -182,7 +182,7 @@ function ProfilePage() {
             </p>
             {(!profile.program_type || !profile.generation || !profile.major) && (
               <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 p-3 text-sm">
-                <strong>Complete your profile.</strong> Please fill in your program, generation, and major below so you can be approved and appear in the directory.
+                <strong>Complete your profile.</strong> Please fill in your program, generation, and major below so you appear in the directory.
               </div>
             )}
           </div>
