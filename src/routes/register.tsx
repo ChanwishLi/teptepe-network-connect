@@ -52,6 +52,8 @@ function RegisterPage() {
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setF((p) => ({ ...p, [k]: v }));
   const partners = f.program_type ? PARTNER_UNIVERSITIES[f.program_type] : [];
+  const isCert = f.edu_level === "certification";
+  const isHs = f.edu_level === "high_school";
 
   const onAvatarChange = (file: File | null) => {
     setAvatarFile(file);
@@ -64,11 +66,12 @@ function RegisterPage() {
     if (step === 2) return f.email && f.password.length >= 8 && f.country;
     if (step === 3) {
       if (!f.program_type || !f.major || !f.generation || !f.graduation_year || !f.admission_year) return false;
-      if (f.program_type !== "TEPE" && !f.partner_university) return false;
+      if (f.program_type !== "TEPE" && (!f.partner_university || !f.partner_degree)) return false;
       return true;
     }
-    if (step === 4) return f.c_data && f.c_directory;
-    return false;
+    if (step === 5) return !(f.company || f.position) || !!(f.company && f.position);
+    if (step === 7) return f.c_data && f.c_directory;
+    return true;
   };
 
   const next = () => {
@@ -93,7 +96,9 @@ function RegisterPage() {
           facebook_url: f.facebook_url, instagram_url: f.instagram_url, linkedin_url: f.linkedin_url, personal_website: f.personal_website,
           student_id: f.student_id, program_type: f.program_type, major: f.major,
           admission_year: f.admission_year, graduation_year: f.graduation_year, generation: f.generation,
-          partner_university: f.partner_university, honors: f.honors,
+          partner_university: f.partner_university, partner_degree: f.partner_degree, honors: f.honors,
+          professional_summary: f.professional_summary, skills: f.skills, expertise: f.expertise,
+          research_interests: f.research_interests, certifications: f.certifications,
         },
       },
     });
@@ -112,7 +117,35 @@ function RegisterPage() {
         const up = await supabase.storage.from("avatars").upload(path, avatarFile, { upsert: true, contentType: avatarFile.type });
         const patch: any = { profile_complete: true };
         if (!up.error) patch.avatar_url = path;
-        await supabase.from("profiles").update(patch).eq("id", data.user.id);
+        await supabase.from("profiles").update({
+          ...patch,
+          professional_summary: f.professional_summary || null,
+          skills: parseCsv(f.skills), expertise: parseCsv(f.expertise), research_interests: parseCsv(f.research_interests), certifications: parseCsv(f.certifications),
+        }).eq("id", data.user.id);
+
+        if (f.edu_institution) {
+          const edu: any = { user_id: data.user.id, level: f.edu_level, institution: f.edu_institution, is_mandatory: false };
+          if (isCert) { edu.organization = f.edu_organization || f.edu_institution; edu.year_awarded = f.edu_year ? Number(f.edu_year) : null; }
+          else { edu.major = isHs ? null : f.edu_major || null; edu.country = f.edu_country || null; edu.graduation_year = f.edu_year ? Number(f.edu_year) : null; edu.honors = f.edu_honors || null; }
+          await supabase.from("education_records").insert(edu);
+        }
+        if (f.company && f.position) {
+          await supabase.from("employment_records").insert({
+            user_id: data.user.id, company: f.company, position: f.position,
+            business_type: f.business_type || null, industry: f.industry || null,
+            city: f.work_city || null, country: f.work_country || null,
+            start_year: f.start_year ? Number(f.start_year) : null, end_year: f.is_current ? null : (f.end_year ? Number(f.end_year) : null),
+            is_current: !!f.is_current,
+          });
+        }
+        await supabase.from("mentorship_settings").upsert({
+          user_id: data.user.id,
+          available_as_mentor: !!f.mentor_available,
+          hours_per_month: f.mentor_hours ? Number(f.mentor_hours) : null,
+          preferred_contact_method: f.mentor_contact || null,
+          mentorship_areas: parseCsv(f.mentor_areas),
+          industry_expertise: parseCsv(f.mentor_industry),
+        }, { onConflict: "user_id" });
         await supabase.from("consent_records").insert({
           user_id: data.user.id, consent_version: CONSENT_VERSION,
           data_collection: f.c_data, directory_participation: f.c_directory,
