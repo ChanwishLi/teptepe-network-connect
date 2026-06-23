@@ -143,16 +143,23 @@ function CompleteProfilePage() {
       const { data: mandatory } = await supabase.from("education_records").select("id").eq("user_id", user!.id).eq("is_mandatory", true).limit(1);
       if (!mandatory?.length) {
         const mandatoryRows: any[] = [{ user_id: user!.id, level: "bachelor", institution: "Thammasat University", major: f.major, country: "Thailand", graduation_year: Number(f.graduation_year), honors: f.honors || null, is_mandatory: true }];
-        if (f.program_type !== "TEPE") mandatoryRows.push({ user_id: user!.id, level: f.partner_degree, institution: f.partner_university, major: f.major, graduation_year: Number(f.graduation_year), is_mandatory: true });
+        if (f.program_type !== "TEPE") mandatoryRows.push({ user_id: user!.id, level: f.partner_degree, institution: f.partner_university, major: (f.partner_major || f.major), graduation_year: Number(f.graduation_year), is_mandatory: true });
         const { error: eduErr } = await supabase.from("education_records").insert(mandatoryRows);
         if (eduErr) throw eduErr;
       }
 
-      if (f.edu_institution) {
-        const edu: any = { user_id: user!.id, level: f.edu_level, institution: f.edu_institution, is_mandatory: false };
-        if (isCert) { edu.organization = f.edu_organization || f.edu_institution; edu.year_awarded = f.edu_year ? Number(f.edu_year) : null; }
-        else { edu.major = isHs ? null : f.edu_major || null; edu.country = f.edu_country || null; edu.graduation_year = f.edu_year ? Number(f.edu_year) : null; edu.honors = f.edu_honors || null; }
-        const { error: extraEduErr } = await supabase.from("education_records").insert(edu);
+      const extraRows = (f.educations as any[])
+        .filter((e) => e.institution?.trim())
+        .map((e) => {
+          const cert = e.level === "certification";
+          const hs = e.level === "high_school";
+          const row: any = { user_id: user!.id, level: e.level, institution: e.institution.trim(), is_mandatory: false };
+          if (cert) { row.organization = e.organization?.trim() || e.institution.trim(); row.year_awarded = e.year ? Number(e.year) : null; }
+          else { row.major = hs ? null : (e.major?.trim() || null); row.country = e.country?.trim() || null; row.graduation_year = e.year ? Number(e.year) : null; row.honors = e.honors?.trim() || null; }
+          return row;
+        });
+      if (extraRows.length) {
+        const { error: extraEduErr } = await supabase.from("education_records").insert(extraRows);
         if (extraEduErr) throw extraEduErr;
       }
 
