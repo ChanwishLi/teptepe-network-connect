@@ -377,6 +377,9 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   return (<div><Label className="mb-1.5 block">{label}</Label>{children}{hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}</div>);
 }
 function Grid2({ children }: { children: React.ReactNode }) { return <div className="grid gap-4 sm:grid-cols-2">{children}</div>; }
+function CheckRow({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+  return <label className="flex cursor-pointer items-center gap-3 rounded-md border border-border p-4 text-sm hover:bg-muted/40"><Checkbox checked={checked} onCheckedChange={(v) => onChange(!!v)} />{label}</label>;
+}
 function ConsentRow({ checked, onChange, label, desc }: { checked: boolean; onChange: (v: boolean) => void; label: string; desc: string }) {
   return (
     <label className="flex items-start gap-3 rounded-md border border-border p-4 cursor-pointer hover:bg-muted/40">
@@ -384,4 +387,10 @@ function ConsentRow({ checked, onChange, label, desc }: { checked: boolean; onCh
       <div><div className="text-sm font-medium">{label}</div><div className="text-xs text-muted-foreground">{desc}</div></div>
     </label>
   );
+}
+function parseCsv(v: string): string[] { return v.split(",").map((s) => s.trim()).filter(Boolean); }
+function degreeLabel(v: string) {
+  if (v === "master") return "Master's Degree";
+  if (v === "phd") return "Doctoral Degree (PhD)";
+  return "Bachelor's Degree";
 }
