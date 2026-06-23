@@ -192,7 +192,7 @@ function CompleteProfilePage() {
       });
       if (consentErr) throw consentErr;
 
-      toast.success("Profile complete! Awaiting admin approval.");
+      toast.success("Profile complete! Welcome to the alumni directory.");
       navigate({ to: "/directory", replace: true });
     } catch (e: any) {
       toast.error(e.message || "Failed to save");
