@@ -55,8 +55,9 @@ function RegisterPage() {
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setF((p) => ({ ...p, [k]: v }));
   const partners = f.program_type ? PARTNER_UNIVERSITIES[f.program_type] : [];
-  const isCert = f.edu_level === "certification";
-  const isHs = f.edu_level === "high_school";
+  const updateEdu = (i: number, patch: Partial<EduEntry>) => setF((p) => ({ ...p, educations: p.educations.map((e, idx) => idx === i ? { ...e, ...patch } : e) }));
+  const addEdu = () => setF((p) => ({ ...p, educations: [...p.educations, blankEdu()] }));
+  const removeEdu = (i: number) => setF((p) => ({ ...p, educations: p.educations.filter((_, idx) => idx !== i) }));
 
   const onAvatarChange = (file: File | null) => {
     setAvatarFile(file);
