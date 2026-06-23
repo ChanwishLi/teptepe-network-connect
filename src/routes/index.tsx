@@ -6,7 +6,6 @@ import { PageShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Users, GraduationCap, Globe, Building2, Calendar } from "lucide-react";
-import buildingAsset from "@/assets/engineering-building.jpg.asset.json";
 import { useAvatarUrl } from "@/lib/avatar";
 
 export const Route = createFileRoute("/")({
@@ -106,9 +105,7 @@ function Landing() {
       {/* Hero with building photo */}
       <section className="relative overflow-hidden border-b border-border">
         <div className="absolute inset-0 -z-10">
-          <img src={buildingAsset.url} alt="Thammasat School of Engineering" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/85 to-background/40" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+          <div className="h-full w-full bg-[linear-gradient(135deg,var(--background)_0%,var(--muted)_52%,color-mix(in_oklch,var(--primary)_22%,transparent)_100%)]" />
         </div>
         <div className="mx-auto max-w-7xl px-4 py-28 lg:px-8 lg:py-36">
           <div className="max-w-3xl">

@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { CONSENT_VERSION, GENERATIONS, MAJORS, PARTNER_UNIVERSITIES, PROGRAM_TYPES, generationStatus, type ProgramType } from "@/lib/constants";
-import logoAsset from "@/assets/tep-tepe-logo.png.asset.json";
+import logoAsset from "@/assets/tep-tepe-logo.svg";
 
 export const Route = createFileRoute("/complete-profile")({
   head: () => ({ meta: [{ title: "Complete your profile — TEP-TEPE" }] }),
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/complete-profile")({
 });
 
 function CompleteProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
@@ -85,9 +85,9 @@ function CompleteProfilePage() {
         certifications: csv(data.certifications),
       }));
       setHasAvatar(!!data.avatar_url);
-      if (data.profile_complete) navigate({ to: "/directory", replace: true });
+      if (data.profile_complete) navigate({ to: isAdmin ? "/admin" : "/directory", replace: true });
     })();
-  }, [user, navigate]);
+  }, [user, isAdmin, navigate]);
 
   const onAvatar = (file: File | null) => {
     setAvatarFile(file);
@@ -208,7 +208,7 @@ function CompleteProfilePage() {
     <div className="min-h-screen bg-muted/30">
       <header className="border-b border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-2xl items-center px-4">
-          <img src={logoAsset.url} alt="TEP-TEPE" className="h-9 w-auto" />
+          <img src={logoAsset} alt="TEP-TEPE" className="h-9 w-auto" />
           <span className="ml-3 text-sm text-muted-foreground">Complete your profile</span>
         </div>
       </header>

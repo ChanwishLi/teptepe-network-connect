@@ -21,7 +21,7 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const navigate = useNavigate();
   const { redirect } = useSearch({ from: "/login" });
-  const { user, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,11 +30,15 @@ function LoginPage() {
   useEffect(() => {
     if (authLoading || !user) return;
     (async () => {
+      if (isAdmin) {
+        navigate({ to: redirect ?? "/admin", replace: true });
+        return;
+      }
       const { data } = await supabase.from("profiles").select("profile_complete").eq("id", user.id).maybeSingle();
       if (!data?.profile_complete) navigate({ to: "/complete-profile", replace: true });
       else navigate({ to: redirect ?? "/directory", replace: true });
     })();
-  }, [user, authLoading, navigate, redirect]);
+  }, [user, isAdmin, authLoading, navigate, redirect]);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();

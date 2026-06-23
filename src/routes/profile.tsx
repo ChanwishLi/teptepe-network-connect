@@ -41,7 +41,7 @@ function ProfilePage() {
     if (!loading && !user) navigate({ to: "/login" });
   }, [loading, user, navigate]);
 
-  const { data: profile, isLoading: pLoading } = useQuery({
+  const { data: profile, isLoading: pLoading, error: profileError } = useQuery({
     enabled: !!user,
     queryKey: ["profile", user?.id],
     queryFn: async () => {
@@ -49,6 +49,8 @@ function ProfilePage() {
       if (error) throw error;
       return data;
     },
+    retry: false,
+    staleTime: 60_000,
   });
 
   useEffect(() => {
@@ -64,6 +66,8 @@ function ProfilePage() {
       const { data } = await supabase.from("mentorship_settings").select("*").eq("user_id", user!.id).maybeSingle();
       return data;
     },
+    retry: false,
+    staleTime: 60_000,
   });
 
   const { data: education = [] } = useQuery({
@@ -76,6 +80,8 @@ function ProfilePage() {
       if (error) throw error;
       return data ?? [];
     },
+    retry: false,
+    staleTime: 60_000,
   });
 
   const [form, setForm] = useState<any>({});
@@ -147,9 +153,15 @@ function ProfilePage() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  if (loading || !user || pLoading || !profile) {
+  if (loading || !user || pLoading) {
     return <PageShell><div className="mx-auto max-w-3xl px-4 py-16 text-sm text-muted-foreground">Loading…</div></PageShell>;
   }
+
+  if (profileError) {
+    return <PageShell><div className="mx-auto max-w-3xl px-4 py-16 text-sm text-destructive">Profile could not load. Please refresh and try again.</div></PageShell>;
+  }
+
+  if (!profile) return null;
 
   const initials = `${(profile.first_name?.[0] ?? "")}${(profile.last_name?.[0] ?? "")}`.toUpperCase() || "?";
   const mandatory = (education as any[]).filter((e) => e.is_mandatory);
