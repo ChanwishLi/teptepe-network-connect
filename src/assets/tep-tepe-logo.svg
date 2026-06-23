@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 64" role="img" aria-labelledby="title">
+  <title id="title">TEP-TEPE Alumni Network</title>
+  <rect width="220" height="64" rx="8" fill="#13233f"/>
+  <path d="M18 45h52l-6 8H12l6-8Zm9-30h52l-6 8H21l6-8Zm-6 15h52l-6 8H15l6-8Z" fill="#d8a735"/>
+  <text x="90" y="29" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#ffffff">TEP-TEPE</text>
+  <text x="91" y="45" font-family="Arial, Helvetica, sans-serif" font-size="10" letter-spacing="1.4" fill="#d8a735">ALUMNI NETWORK</text>
+</svg>
