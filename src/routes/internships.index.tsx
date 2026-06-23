@@ -64,7 +64,7 @@ function InternshipsPage() {
           </div>
           {user && (
             <Button asChild>
-              <Link to="/internships/new"><Plus className="mr-1.5 h-4 w-4" /> Post an opportunity</Link>
+              <Link to="/opportunities/new"><Plus className="mr-1.5 h-4 w-4" /> Post an opportunity</Link>
             </Button>
           )}
         </header>
