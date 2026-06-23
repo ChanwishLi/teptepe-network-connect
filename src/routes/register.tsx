@@ -165,7 +165,7 @@ function RegisterPage() {
       }
     }
     setLoading(false);
-    toast.success("Account created. Awaiting admin approval.");
+    toast.success("Account created — welcome to TEP-TEPE!");
     navigate({ to: "/directory", replace: true });
   };
 
