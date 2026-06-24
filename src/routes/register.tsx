@@ -82,12 +82,13 @@ function RegisterPage() {
 
   const validateStep = () => {
     if (step === 1) return f.first_name && f.last_name && f.gender && f.date_of_birth && f.nationality && !!avatarFile;
-    if (step === 2) return f.email && f.password.length >= 8 && f.country;
+    if (step === 2) return f.email && f.password.length >= 8 && f.country && f.phone.trim();
     if (step === 3) {
-      if (!f.program_type || !f.major || !f.generation || !f.graduation_year || !f.admission_year) return false;
-      if (f.program_type !== "TEPE" && (!f.partner_university || !f.partner_degree)) return false;
+      if (!f.student_id.trim() || !f.program_type || !f.major || !f.generation || !f.graduation_year || !f.admission_year) return false;
+      if (f.program_type !== "TEPE" && (!f.partner_university || !f.partner_degree || !f.partner_major.trim())) return false;
       return true;
     }
+    if (step === 4) return !!(f.professional_summary.trim() && f.skills.trim() && f.expertise.trim() && f.research_interests.trim() && f.certifications.trim());
     if (step === 5) return !(f.company || f.position) || !!(f.company && f.position);
     if (step === 7) return f.c_data && f.c_directory;
     return true;
