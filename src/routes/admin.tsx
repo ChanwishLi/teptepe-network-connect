@@ -165,12 +165,15 @@ function ImageUploadField({ value, onChange }: { value: string; onChange: (v: st
       const path = `uploads/${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
       if (error) throw error;
-      const { data } = supabase.storage.from("media").getPublicUrl(path);
-      onChange(data.publicUrl);
+      // Bucket is private — generate a long-lived signed URL (~10 years) so <img src> works.
+      const { data: signed, error: signErr } = await supabase.storage.from("media").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      if (signErr || !signed) throw signErr ?? new Error("Could not sign URL");
+      onChange(signed.signedUrl);
       toast.success("Image uploaded");
     } catch (e: any) { toast.error(e.message); }
     finally { setUploading(false); }
   };
+
   return (
     <div className="space-y-2">
       {value && <img src={value} alt="" className="h-32 w-full rounded-md object-cover border border-border" />}
