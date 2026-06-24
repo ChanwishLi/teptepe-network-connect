@@ -117,7 +117,7 @@ function MembersAdmin() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "members", q],
     queryFn: async () => {
-      let query = supabase.from("profiles").select("id, first_name, last_name, email, generation, program_type, is_approved, is_featured").order("generation", { ascending: false }).limit(200);
+      let query = supabase.from("profiles").select("id, first_name, last_name, email, generation, program_type, is_approved, is_featured, featured_caption").order("generation", { ascending: false }).limit(200);
       if (q) query = query.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%,email.ilike.%${q}%`);
       const { data, error } = await query;
       if (error) throw error;
@@ -137,21 +137,30 @@ function MembersAdmin() {
       <Input placeholder="Search members…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-sm" />
       <div className="mt-4 space-y-2">
         {isLoading ? <div className="text-sm text-muted-foreground">Loading…</div> : (data ?? []).map((m) => (
-          <Card key={m.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-            <div>
-              <div className="font-medium">{m.first_name} {m.last_name}</div>
-              <div className="text-xs text-muted-foreground">{m.email} · {m.program_type} #{m.generation}</div>
+          <Card key={m.id} className="p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="font-medium">{m.first_name} {m.last_name}</div>
+                <div className="text-xs text-muted-foreground">{m.email} · {m.program_type} #{m.generation}</div>
+              </div>
+              <div className="flex items-center gap-5">
+                <label className="flex items-center gap-2 text-xs"><span>Featured</span><Switch checked={!!m.is_featured} onCheckedChange={(v) => toggle.mutate({ id: m.id, patch: { is_featured: v } })} /></label>
+                <Button size="sm" variant="ghost" onClick={() => { if (confirm("Hide this member's profile?")) toggle.mutate({ id: m.id, patch: { profile_complete: false } }); }}>Hide</Button>
+              </div>
             </div>
-            <div className="flex items-center gap-5">
-              <label className="flex items-center gap-2 text-xs"><span>Featured</span><Switch checked={!!m.is_featured} onCheckedChange={(v) => toggle.mutate({ id: m.id, patch: { is_featured: v } })} /></label>
-              <Button size="sm" variant="ghost" onClick={() => { if (confirm("Permanently delete this member's profile?")) toggle.mutate({ id: m.id, patch: { profile_complete: false } }); }}>Hide</Button>
-            </div>
+            {m.is_featured && (
+              <div className="mt-3 flex items-center gap-2">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground whitespace-nowrap">Highlight caption</Label>
+                <Input defaultValue={m.featured_caption ?? ""} placeholder='e.g. "Anandamahidol Scholarship 2020"' onBlur={(e) => { if (e.target.value !== (m.featured_caption ?? "")) toggle.mutate({ id: m.id, patch: { featured_caption: e.target.value || null } }); }} />
+              </div>
+            )}
           </Card>
         ))}
       </div>
     </div>
   );
 }
+
 
 /* ---------- Generic CRUD shell ---------- */
 type Field = { name: string; label: string; type?: "text" | "textarea" | "date" | "number" | "url" | "switch" | "image"; rows?: number; hint?: string };
