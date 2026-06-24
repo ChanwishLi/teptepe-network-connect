@@ -326,16 +326,19 @@ function StoriesAdmin() {
     <CrudSection
       title="Success stories"
       table="success_stories"
-      defaultRow={{ title: "", alumni_name: "", company: "", generation: null, content: "", image_url: "", is_published: false }}
+      defaultRow={{ title: "", alumni_name: "", company: "", generation: null, summary: "", content: "", image_url: "", external_url: "", is_published: false }}
       fields={[
         { name: "title", label: "Title" },
         { name: "alumni_name", label: "Alumni name" },
         { name: "company", label: "Company" },
         { name: "generation", label: "Generation", type: "number" },
+        { name: "summary", label: "Short summary (preview)", type: "textarea", rows: 2 },
         { name: "content", label: "Story", type: "textarea", rows: 8 },
         { name: "image_url", label: "Cover image", type: "image" },
+        { name: "external_url", label: "External link (optional — opens an outside website)", type: "url" },
         { name: "is_published", label: "Published", type: "switch" },
       ]}
+
       listColumns={(r) => (
         <div>
           <div className="font-medium">{r.title}</div>
