@@ -260,23 +260,31 @@ function Landing() {
   );
 }
 
-function FeaturedCard({ p }: { p: { id: string; first_name: string; last_name: string; generation: number | null; program_type: string | null; avatar_url: string | null; city: string | null; country: string | null } }) {
+function FeaturedCard({ p }: { p: { id: string; first_name: string; last_name: string; generation: number | null; program_type: string | null; major: string | null; avatar_url: string | null; city: string | null; country: string | null; featured_caption: string | null } }) {
   const url = useAvatarUrl(p.avatar_url);
+  const initials = `${p.first_name?.[0] ?? ""}${p.last_name?.[0] ?? ""}`.toUpperCase();
   return (
-    <Link to="/alumni/$id" params={{ id: p.id }} preload="intent">
-      <Card className="flex items-center gap-4 p-5 transition-all hover:shadow-md hover:border-primary/40">
-        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-muted">
-          {url ? <img src={url} alt="" className="h-full w-full object-cover" /> : null}
-        </div>
-        <div className="min-w-0">
-          <div className="truncate font-semibold">{p.first_name} {p.last_name}</div>
-          <div className="truncate text-xs text-muted-foreground">{p.program_type} · TEP #{p.generation}</div>
-          <div className="truncate text-xs text-muted-foreground">{[p.city, p.country].filter(Boolean).join(", ")}</div>
-        </div>
-      </Card>
+    <Link to="/alumni/$id" params={{ id: p.id }} preload="intent" className="group block">
+      <div className="aspect-[3/4] w-full overflow-hidden rounded-lg bg-muted ring-1 ring-border">
+        {url ? (
+          <img src={url} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center font-display text-4xl font-semibold text-muted-foreground">{initials}</div>
+        )}
+      </div>
+      {p.featured_caption && (
+        <div className="mt-4 text-sm font-medium leading-snug text-foreground">{p.featured_caption}</div>
+      )}
+      <div className={`${p.featured_caption ? "mt-2" : "mt-4"} font-display text-base font-semibold leading-tight`}>
+        {p.first_name} {p.last_name}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground">
+        {p.program_type}{p.generation ? ` #${p.generation}` : ""}{p.major ? ` · ${p.major}` : ""}
+      </div>
     </Link>
   );
 }
+
 
 function SectionHeader({ title, subtitle, linkTo, linkLabel }: { title: string; subtitle: string; linkTo: string; linkLabel: string }) {
   return (
