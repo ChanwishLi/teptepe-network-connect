@@ -250,7 +250,7 @@ function RegisterPage() {
                 <h2 className="font-display text-lg font-semibold">Contact information</h2>
                 <Grid2><Field label="Email *"><Input type="email" value={f.email} onChange={(e) => set("email", e.target.value)} required /></Field>
                 <Field label="Password *" hint="At least 8 characters"><Input type="password" minLength={8} value={f.password} onChange={(e) => set("password", e.target.value)} required /></Field></Grid2>
-                <Field label="Phone"><Input value={f.phone} onChange={(e) => set("phone", e.target.value)} /></Field>
+                <Field label="Phone *"><Input value={f.phone} onChange={(e) => set("phone", e.target.value)} required /></Field>
                 <Field label="Address"><Input value={f.address} onChange={(e) => set("address", e.target.value)} /></Field>
                 <Grid2><Field label="City"><Input value={f.city} onChange={(e) => set("city", e.target.value)} /></Field>
                 <Field label="Province / State"><Input value={f.province} onChange={(e) => set("province", e.target.value)} /></Field></Grid2>
