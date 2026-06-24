@@ -305,8 +305,8 @@ function RegisterPage() {
                         </Select>
                       </Field>
                     </Grid2>
-                    <Field label="Partner degree program / major" hint="e.g. Electronics Engineering at KU Leuven (may differ from your Thammasat major)">
-                      <Input value={f.partner_major} onChange={(e) => set("partner_major", e.target.value)} />
+                    <Field label="Partner degree program / major *" hint="e.g. Electronics Engineering at KU Leuven (may differ from your Thammasat major)">
+                      <Input value={f.partner_major} onChange={(e) => set("partner_major", e.target.value)} required />
                     </Field>
                   </>
                 )}
