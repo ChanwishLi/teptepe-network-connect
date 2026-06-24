@@ -171,15 +171,18 @@ function Landing() {
         </div>
       </section>
 
-      {/* Featured alumni */}
+      {/* Featured alumni — portrait grid inspired by tep.engr.tu.ac.th/alumni */}
       {(featured.data?.length ?? 0) > 0 && (
-        <section className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
-          <SectionHeader title="Featured alumni" subtitle="Celebrating members of our community" linkTo="/directory" linkLabel="View directory" />
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.data!.map((p) => <FeaturedCard key={p.id} p={p} />)}
+        <section className="border-y border-border bg-muted/30">
+          <div className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
+            <SectionHeader title="Featured Alumni" subtitle="Recognising scholarships, achievements and leaders of our community" linkTo="/directory" linkLabel="View directory" />
+            <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+              {featured.data!.map((p) => <FeaturedCard key={p.id} p={p} />)}
+            </div>
           </div>
         </section>
       )}
+
 
       {/* Stories */}
       {(stories.data?.length ?? 0) > 0 && (
