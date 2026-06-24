@@ -648,6 +648,7 @@ export type Database = {
           email: string | null
           expertise: string[] | null
           facebook_url: string | null
+          featured_caption: string | null
           first_name: string | null
           generation: number | null
           graduation_year: number | null
