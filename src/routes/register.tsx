@@ -195,12 +195,13 @@ function RegisterPage() {
     <PageShell>
       <div className="mx-auto max-w-2xl px-4 py-12">
         <Card className="p-8">
-          <div className="mb-6">
-            <div className="flex items-baseline justify-between">
+          <div className="mb-6 flex flex-col items-center">
+            <img src={logoAsset.url} alt="TEP-TEPE" className="mb-4 h-16 w-auto" />
+            <div className="flex w-full items-baseline justify-between">
               <h1 className="font-display text-3xl font-bold">Join TEP-TEPE</h1>
               <span className="text-xs uppercase tracking-wider text-muted-foreground">Step {step} of {TOTAL_STEPS}</span>
             </div>
-            <Progress value={(step / TOTAL_STEPS) * 100} className="mt-3" />
+            <Progress value={(step / TOTAL_STEPS) * 100} className="mt-3 w-full" />
           </div>
 
           {step === 1 && (
