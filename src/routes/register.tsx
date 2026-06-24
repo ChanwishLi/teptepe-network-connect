@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { MAJORS, PROGRAM_TYPES, PARTNER_UNIVERSITIES, GENERATIONS, CONSENT_VERSION, generationStatus, type ProgramType } from "@/lib/constants";
+import logoAsset from "@/assets/tep-tepe-logo.png.asset.json";
 
 export const Route = createFileRoute("/register")({ component: RegisterPage });
 
@@ -81,12 +82,13 @@ function RegisterPage() {
 
   const validateStep = () => {
     if (step === 1) return f.first_name && f.last_name && f.gender && f.date_of_birth && f.nationality && !!avatarFile;
-    if (step === 2) return f.email && f.password.length >= 8 && f.country;
+    if (step === 2) return f.email && f.password.length >= 8 && f.country && f.phone.trim();
     if (step === 3) {
-      if (!f.program_type || !f.major || !f.generation || !f.graduation_year || !f.admission_year) return false;
-      if (f.program_type !== "TEPE" && (!f.partner_university || !f.partner_degree)) return false;
+      if (!f.student_id.trim() || !f.program_type || !f.major || !f.generation || !f.graduation_year || !f.admission_year) return false;
+      if (f.program_type !== "TEPE" && (!f.partner_university || !f.partner_degree || !f.partner_major.trim())) return false;
       return true;
     }
+    if (step === 4) return !!(f.professional_summary.trim() && f.skills.trim() && f.expertise.trim() && f.research_interests.trim() && f.certifications.trim());
     if (step === 5) return !(f.company || f.position) || !!(f.company && f.position);
     if (step === 7) return f.c_data && f.c_directory;
     return true;
@@ -193,12 +195,13 @@ function RegisterPage() {
     <PageShell>
       <div className="mx-auto max-w-2xl px-4 py-12">
         <Card className="p-8">
-          <div className="mb-6">
-            <div className="flex items-baseline justify-between">
+          <div className="mb-6 flex flex-col items-center">
+            <img src={logoAsset.url} alt="TEP-TEPE" className="mb-4 h-16 w-auto" />
+            <div className="flex w-full items-baseline justify-between">
               <h1 className="font-display text-3xl font-bold">Join TEP-TEPE</h1>
               <span className="text-xs uppercase tracking-wider text-muted-foreground">Step {step} of {TOTAL_STEPS}</span>
             </div>
-            <Progress value={(step / TOTAL_STEPS) * 100} className="mt-3" />
+            <Progress value={(step / TOTAL_STEPS) * 100} className="mt-3 w-full" />
           </div>
 
           {step === 1 && (
@@ -247,7 +250,7 @@ function RegisterPage() {
                 <h2 className="font-display text-lg font-semibold">Contact information</h2>
                 <Grid2><Field label="Email *"><Input type="email" value={f.email} onChange={(e) => set("email", e.target.value)} required /></Field>
                 <Field label="Password *" hint="At least 8 characters"><Input type="password" minLength={8} value={f.password} onChange={(e) => set("password", e.target.value)} required /></Field></Grid2>
-                <Field label="Phone"><Input value={f.phone} onChange={(e) => set("phone", e.target.value)} /></Field>
+                <Field label="Phone *"><Input value={f.phone} onChange={(e) => set("phone", e.target.value)} required /></Field>
                 <Field label="Address"><Input value={f.address} onChange={(e) => set("address", e.target.value)} /></Field>
                 <Grid2><Field label="City"><Input value={f.city} onChange={(e) => set("city", e.target.value)} /></Field>
                 <Field label="Province / State"><Input value={f.province} onChange={(e) => set("province", e.target.value)} /></Field></Grid2>
@@ -263,7 +266,7 @@ function RegisterPage() {
             {step === 3 && (
               <>
                 <h2 className="font-display text-lg font-semibold">Program information</h2>
-                <Grid2><Field label="Student ID"><Input value={f.student_id} onChange={(e) => set("student_id", e.target.value)} /></Field>
+                <Grid2><Field label="Student ID *"><Input value={f.student_id} onChange={(e) => set("student_id", e.target.value)} required /></Field>
                 <Field label="Generation *">
                   <Select value={f.generation} onValueChange={(v) => set("generation", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
@@ -302,8 +305,8 @@ function RegisterPage() {
                         </Select>
                       </Field>
                     </Grid2>
-                    <Field label="Partner degree program / major" hint="e.g. Electronics Engineering at KU Leuven (may differ from your Thammasat major)">
-                      <Input value={f.partner_major} onChange={(e) => set("partner_major", e.target.value)} />
+                    <Field label="Partner degree program / major *" hint="e.g. Electronics Engineering at KU Leuven (may differ from your Thammasat major)">
+                      <Input value={f.partner_major} onChange={(e) => set("partner_major", e.target.value)} required />
                     </Field>
                   </>
                 )}
@@ -329,12 +332,12 @@ function RegisterPage() {
             {step === 4 && (
               <>
                 <h2 className="font-display text-lg font-semibold">Professional profile</h2>
-                <Field label="Professional summary"><Textarea rows={4} value={f.professional_summary} onChange={(e) => set("professional_summary", e.target.value)} /></Field>
+                <Field label="Professional summary *"><Textarea rows={4} value={f.professional_summary} onChange={(e) => set("professional_summary", e.target.value)} required /></Field>
                 <Grid2>
-                  <Field label="Skills (comma separated)"><Input value={f.skills} onChange={(e) => set("skills", e.target.value)} /></Field>
-                  <Field label="Expertise (comma separated)"><Input value={f.expertise} onChange={(e) => set("expertise", e.target.value)} /></Field>
-                  <Field label="Research interests"><Input value={f.research_interests} onChange={(e) => set("research_interests", e.target.value)} /></Field>
-                  <Field label="Certifications"><Input value={f.certifications} onChange={(e) => set("certifications", e.target.value)} /></Field>
+                  <Field label="Skills (comma separated) *"><Input value={f.skills} onChange={(e) => set("skills", e.target.value)} required /></Field>
+                  <Field label="Expertise (comma separated) *"><Input value={f.expertise} onChange={(e) => set("expertise", e.target.value)} required /></Field>
+                  <Field label="Research interests *"><Input value={f.research_interests} onChange={(e) => set("research_interests", e.target.value)} required /></Field>
+                  <Field label="Certifications *"><Input value={f.certifications} onChange={(e) => set("certifications", e.target.value)} required /></Field>
                 </Grid2>
               </>
             )}
