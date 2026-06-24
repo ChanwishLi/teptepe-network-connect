@@ -117,7 +117,7 @@ function MembersAdmin() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "members", q],
     queryFn: async () => {
-      let query = supabase.from("profiles").select("id, first_name, last_name, email, generation, program_type, is_approved, is_featured").order("generation", { ascending: false }).limit(200);
+      let query = supabase.from("profiles").select("id, first_name, last_name, email, generation, program_type, is_approved, is_featured, featured_caption").order("generation", { ascending: false }).limit(200);
       if (q) query = query.or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%,email.ilike.%${q}%`);
       const { data, error } = await query;
       if (error) throw error;
@@ -137,21 +137,30 @@ function MembersAdmin() {
       <Input placeholder="Search members…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-sm" />
       <div className="mt-4 space-y-2">
         {isLoading ? <div className="text-sm text-muted-foreground">Loading…</div> : (data ?? []).map((m) => (
-          <Card key={m.id} className="flex flex-wrap items-center justify-between gap-3 p-4">
-            <div>
-              <div className="font-medium">{m.first_name} {m.last_name}</div>
-              <div className="text-xs text-muted-foreground">{m.email} · {m.program_type} #{m.generation}</div>
+          <Card key={m.id} className="p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="font-medium">{m.first_name} {m.last_name}</div>
+                <div className="text-xs text-muted-foreground">{m.email} · {m.program_type} #{m.generation}</div>
+              </div>
+              <div className="flex items-center gap-5">
+                <label className="flex items-center gap-2 text-xs"><span>Featured</span><Switch checked={!!m.is_featured} onCheckedChange={(v) => toggle.mutate({ id: m.id, patch: { is_featured: v } })} /></label>
+                <Button size="sm" variant="ghost" onClick={() => { if (confirm("Hide this member's profile?")) toggle.mutate({ id: m.id, patch: { profile_complete: false } }); }}>Hide</Button>
+              </div>
             </div>
-            <div className="flex items-center gap-5">
-              <label className="flex items-center gap-2 text-xs"><span>Featured</span><Switch checked={!!m.is_featured} onCheckedChange={(v) => toggle.mutate({ id: m.id, patch: { is_featured: v } })} /></label>
-              <Button size="sm" variant="ghost" onClick={() => { if (confirm("Permanently delete this member's profile?")) toggle.mutate({ id: m.id, patch: { profile_complete: false } }); }}>Hide</Button>
-            </div>
+            {m.is_featured && (
+              <div className="mt-3 flex items-center gap-2">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground whitespace-nowrap">Highlight caption</Label>
+                <Input defaultValue={m.featured_caption ?? ""} placeholder='e.g. "Anandamahidol Scholarship 2020"' onBlur={(e) => { if (e.target.value !== (m.featured_caption ?? "")) toggle.mutate({ id: m.id, patch: { featured_caption: e.target.value || null } }); }} />
+              </div>
+            )}
           </Card>
         ))}
       </div>
     </div>
   );
 }
+
 
 /* ---------- Generic CRUD shell ---------- */
 type Field = { name: string; label: string; type?: "text" | "textarea" | "date" | "number" | "url" | "switch" | "image"; rows?: number; hint?: string };
@@ -165,12 +174,15 @@ function ImageUploadField({ value, onChange }: { value: string; onChange: (v: st
       const path = `uploads/${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
       if (error) throw error;
-      const { data } = supabase.storage.from("media").getPublicUrl(path);
-      onChange(data.publicUrl);
+      // Bucket is private — generate a long-lived signed URL (~10 years) so <img src> works.
+      const { data: signed, error: signErr } = await supabase.storage.from("media").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      if (signErr || !signed) throw signErr ?? new Error("Could not sign URL");
+      onChange(signed.signedUrl);
       toast.success("Image uploaded");
     } catch (e: any) { toast.error(e.message); }
     finally { setUploading(false); }
   };
+
   return (
     <div className="space-y-2">
       {value && <img src={value} alt="" className="h-32 w-full rounded-md object-cover border border-border" />}
@@ -288,7 +300,7 @@ function EventsAdmin() {
       title="Events"
       table="events"
       orderBy="event_date"
-      defaultRow={{ name: "", slug: "", event_date: "", event_time: "", location: "", description: "", content: "", banner_url: "", rsvp_deadline: "", is_published: false, is_archived: false }}
+      defaultRow={{ name: "", slug: "", event_date: "", event_time: "", location: "", description: "", content: "", banner_url: "", external_url: "", rsvp_deadline: "", is_published: false, is_archived: false }}
       fields={[
         { name: "name", label: "Title" },
         { name: "slug", label: "URL slug (e.g. reunion-2026)" },
@@ -298,10 +310,12 @@ function EventsAdmin() {
         { name: "description", label: "Short description (preview)", type: "textarea", rows: 2 },
         { name: "content", label: "Full blog content", type: "textarea", rows: 10 },
         { name: "banner_url", label: "Banner image", type: "image" },
+        { name: "external_url", label: "External link (optional — opens an outside website)", type: "url" },
         { name: "rsvp_deadline", label: "RSVP deadline", type: "date" },
         { name: "is_published", label: "Published", type: "switch" },
         { name: "is_archived", label: "Archived", type: "switch" },
       ]}
+
       listColumns={(r) => (
         <div>
           <div className="font-medium">{r.name} {r.is_published ? <Badge variant="outline" className="ml-2">Published</Badge> : <Badge variant="secondary" className="ml-2">Draft</Badge>}</div>
@@ -321,16 +335,19 @@ function StoriesAdmin() {
     <CrudSection
       title="Success stories"
       table="success_stories"
-      defaultRow={{ title: "", alumni_name: "", company: "", generation: null, content: "", image_url: "", is_published: false }}
+      defaultRow={{ title: "", alumni_name: "", company: "", generation: null, summary: "", content: "", image_url: "", external_url: "", is_published: false }}
       fields={[
         { name: "title", label: "Title" },
         { name: "alumni_name", label: "Alumni name" },
         { name: "company", label: "Company" },
         { name: "generation", label: "Generation", type: "number" },
+        { name: "summary", label: "Short summary (preview)", type: "textarea", rows: 2 },
         { name: "content", label: "Story", type: "textarea", rows: 8 },
         { name: "image_url", label: "Cover image", type: "image" },
+        { name: "external_url", label: "External link (optional — opens an outside website)", type: "url" },
         { name: "is_published", label: "Published", type: "switch" },
       ]}
+
       listColumns={(r) => (
         <div>
           <div className="font-medium">{r.title}</div>

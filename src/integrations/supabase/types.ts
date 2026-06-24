@@ -205,6 +205,7 @@ export type Database = {
           description: string | null
           event_date: string
           event_time: string | null
+          external_url: string | null
           id: string
           is_archived: boolean
           is_published: boolean
@@ -222,6 +223,7 @@ export type Database = {
           description?: string | null
           event_date: string
           event_time?: string | null
+          external_url?: string | null
           id?: string
           is_archived?: boolean
           is_published?: boolean
@@ -239,6 +241,7 @@ export type Database = {
           description?: string | null
           event_date?: string
           event_time?: string | null
+          external_url?: string | null
           id?: string
           is_archived?: boolean
           is_published?: boolean
@@ -371,6 +374,7 @@ export type Database = {
           email: string
           expertise: string[]
           facebook_url: string | null
+          featured_caption: string | null
           first_name: string
           gender: string | null
           generation: number | null
@@ -415,6 +419,7 @@ export type Database = {
           email: string
           expertise?: string[]
           facebook_url?: string | null
+          featured_caption?: string | null
           first_name?: string
           gender?: string | null
           generation?: number | null
@@ -459,6 +464,7 @@ export type Database = {
           email?: string
           expertise?: string[]
           facebook_url?: string | null
+          featured_caption?: string | null
           first_name?: string
           gender?: string | null
           generation?: number | null
@@ -500,6 +506,7 @@ export type Database = {
           content: string
           created_at: string
           created_by: string | null
+          external_url: string | null
           featured_alumni_id: string | null
           generation: number | null
           id: string
@@ -516,6 +523,7 @@ export type Database = {
           content: string
           created_at?: string
           created_by?: string | null
+          external_url?: string | null
           featured_alumni_id?: string | null
           generation?: number | null
           id?: string
@@ -532,6 +540,7 @@ export type Database = {
           content?: string
           created_at?: string
           created_by?: string | null
+          external_url?: string | null
           featured_alumni_id?: string | null
           generation?: number | null
           id?: string
@@ -639,6 +648,7 @@ export type Database = {
           email: string | null
           expertise: string[] | null
           facebook_url: string | null
+          featured_caption: string | null
           first_name: string | null
           generation: number | null
           graduation_year: number | null

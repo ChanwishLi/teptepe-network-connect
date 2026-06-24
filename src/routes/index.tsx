@@ -48,12 +48,13 @@ function useFeatured() {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles_public" as any)
-        .select("id, first_name, last_name, generation, program_type, avatar_url, city, country")
-        .eq("is_featured", true).limit(6);
-      return (data ?? []) as unknown as Array<{ id: string; first_name: string; last_name: string; generation: number | null; program_type: string | null; avatar_url: string | null; city: string | null; country: string | null }>;
+        .select("id, first_name, last_name, generation, program_type, major, avatar_url, city, country, featured_caption")
+        .eq("is_featured", true).limit(8);
+      return (data ?? []) as unknown as Array<{ id: string; first_name: string; last_name: string; generation: number | null; program_type: string | null; major: string | null; avatar_url: string | null; city: string | null; country: string | null; featured_caption: string | null }>;
     },
   });
 }
+
 
 function useStories() {
   return useQuery({
@@ -170,15 +171,18 @@ function Landing() {
         </div>
       </section>
 
-      {/* Featured alumni */}
+      {/* Featured alumni — portrait grid inspired by tep.engr.tu.ac.th/alumni */}
       {(featured.data?.length ?? 0) > 0 && (
-        <section className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
-          <SectionHeader title="Featured alumni" subtitle="Celebrating members of our community" linkTo="/directory" linkLabel="View directory" />
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.data!.map((p) => <FeaturedCard key={p.id} p={p} />)}
+        <section className="border-y border-border bg-muted/30">
+          <div className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
+            <SectionHeader title="Featured Alumni" subtitle="Recognising scholarships, achievements and leaders of our community" linkTo="/directory" linkLabel="View directory" />
+            <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+              {featured.data!.map((p) => <FeaturedCard key={p.id} p={p} />)}
+            </div>
           </div>
         </section>
       )}
+
 
       {/* Stories */}
       {(stories.data?.length ?? 0) > 0 && (
@@ -256,23 +260,31 @@ function Landing() {
   );
 }
 
-function FeaturedCard({ p }: { p: { id: string; first_name: string; last_name: string; generation: number | null; program_type: string | null; avatar_url: string | null; city: string | null; country: string | null } }) {
+function FeaturedCard({ p }: { p: { id: string; first_name: string; last_name: string; generation: number | null; program_type: string | null; major: string | null; avatar_url: string | null; city: string | null; country: string | null; featured_caption: string | null } }) {
   const url = useAvatarUrl(p.avatar_url);
+  const initials = `${p.first_name?.[0] ?? ""}${p.last_name?.[0] ?? ""}`.toUpperCase();
   return (
-    <Link to="/alumni/$id" params={{ id: p.id }} preload="intent">
-      <Card className="flex items-center gap-4 p-5 transition-all hover:shadow-md hover:border-primary/40">
-        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-muted">
-          {url ? <img src={url} alt="" className="h-full w-full object-cover" /> : null}
-        </div>
-        <div className="min-w-0">
-          <div className="truncate font-semibold">{p.first_name} {p.last_name}</div>
-          <div className="truncate text-xs text-muted-foreground">{p.program_type} · TEP #{p.generation}</div>
-          <div className="truncate text-xs text-muted-foreground">{[p.city, p.country].filter(Boolean).join(", ")}</div>
-        </div>
-      </Card>
+    <Link to="/alumni/$id" params={{ id: p.id }} preload="intent" className="group block">
+      <div className="aspect-[3/4] w-full overflow-hidden rounded-lg bg-muted ring-1 ring-border">
+        {url ? (
+          <img src={url} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center font-display text-4xl font-semibold text-muted-foreground">{initials}</div>
+        )}
+      </div>
+      {p.featured_caption && (
+        <div className="mt-4 text-sm font-medium leading-snug text-foreground">{p.featured_caption}</div>
+      )}
+      <div className={`${p.featured_caption ? "mt-2" : "mt-4"} font-display text-base font-semibold leading-tight`}>
+        {p.first_name} {p.last_name}
+      </div>
+      <div className="mt-0.5 text-xs text-muted-foreground">
+        {p.program_type}{p.generation ? ` #${p.generation}` : ""}{p.major ? ` · ${p.major}` : ""}
+      </div>
     </Link>
   );
 }
+
 
 function SectionHeader({ title, subtitle, linkTo, linkLabel }: { title: string; subtitle: string; linkTo: string; linkLabel: string }) {
   return (

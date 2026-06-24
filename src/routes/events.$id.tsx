@@ -2,9 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/site-shell";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, MapPin } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/events/$id")({
   component: EventDetail,
@@ -15,7 +14,6 @@ function EventDetail() {
   const { data, isLoading } = useQuery({
     queryKey: ["event", id],
     queryFn: async () => {
-      // Try slug first, fall back to UUID lookup
       const bySlug = await supabase.from("events").select("*").eq("slug", id).eq("is_published", true).maybeSingle();
       if (bySlug.data) return bySlug.data;
       const byId = await supabase.from("events").select("*").eq("id", id).eq("is_published", true).maybeSingle();
@@ -42,6 +40,15 @@ function EventDetail() {
           </span>
           {data.location && <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" /> {data.location}</span>}
         </div>
+        {(data as any).external_url && (
+          <div className="mt-6">
+            <Button asChild>
+              <a href={(data as any).external_url} target="_blank" rel="noreferrer">
+                Visit event page <ExternalLink className="ml-1.5 h-4 w-4" />
+              </a>
+            </Button>
+          </div>
+        )}
         {data.description && <p className="mt-8 text-lg leading-relaxed text-muted-foreground">{data.description}</p>}
         {data.content && (
           <div className="prose prose-neutral mt-8 max-w-none whitespace-pre-wrap text-base leading-relaxed">
