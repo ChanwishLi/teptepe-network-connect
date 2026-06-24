@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { MAJORS, PROGRAM_TYPES, PARTNER_UNIVERSITIES, GENERATIONS, CONSENT_VERSION, generationStatus, type ProgramType } from "@/lib/constants";
+import logoAsset from "@/assets/tep-tepe-logo.png.asset.json";
 
 export const Route = createFileRoute("/register")({ component: RegisterPage });
 
