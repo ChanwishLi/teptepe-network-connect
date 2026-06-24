@@ -332,12 +332,12 @@ function RegisterPage() {
             {step === 4 && (
               <>
                 <h2 className="font-display text-lg font-semibold">Professional profile</h2>
-                <Field label="Professional summary"><Textarea rows={4} value={f.professional_summary} onChange={(e) => set("professional_summary", e.target.value)} /></Field>
+                <Field label="Professional summary *"><Textarea rows={4} value={f.professional_summary} onChange={(e) => set("professional_summary", e.target.value)} required /></Field>
                 <Grid2>
-                  <Field label="Skills (comma separated)"><Input value={f.skills} onChange={(e) => set("skills", e.target.value)} /></Field>
-                  <Field label="Expertise (comma separated)"><Input value={f.expertise} onChange={(e) => set("expertise", e.target.value)} /></Field>
-                  <Field label="Research interests"><Input value={f.research_interests} onChange={(e) => set("research_interests", e.target.value)} /></Field>
-                  <Field label="Certifications"><Input value={f.certifications} onChange={(e) => set("certifications", e.target.value)} /></Field>
+                  <Field label="Skills (comma separated) *"><Input value={f.skills} onChange={(e) => set("skills", e.target.value)} required /></Field>
+                  <Field label="Expertise (comma separated) *"><Input value={f.expertise} onChange={(e) => set("expertise", e.target.value)} required /></Field>
+                  <Field label="Research interests *"><Input value={f.research_interests} onChange={(e) => set("research_interests", e.target.value)} required /></Field>
+                  <Field label="Certifications *"><Input value={f.certifications} onChange={(e) => set("certifications", e.target.value)} required /></Field>
                 </Grid2>
               </>
             )}
