@@ -291,7 +291,7 @@ function EventsAdmin() {
       title="Events"
       table="events"
       orderBy="event_date"
-      defaultRow={{ name: "", slug: "", event_date: "", event_time: "", location: "", description: "", content: "", banner_url: "", rsvp_deadline: "", is_published: false, is_archived: false }}
+      defaultRow={{ name: "", slug: "", event_date: "", event_time: "", location: "", description: "", content: "", banner_url: "", external_url: "", rsvp_deadline: "", is_published: false, is_archived: false }}
       fields={[
         { name: "name", label: "Title" },
         { name: "slug", label: "URL slug (e.g. reunion-2026)" },
@@ -301,10 +301,12 @@ function EventsAdmin() {
         { name: "description", label: "Short description (preview)", type: "textarea", rows: 2 },
         { name: "content", label: "Full blog content", type: "textarea", rows: 10 },
         { name: "banner_url", label: "Banner image", type: "image" },
+        { name: "external_url", label: "External link (optional — opens an outside website)", type: "url" },
         { name: "rsvp_deadline", label: "RSVP deadline", type: "date" },
         { name: "is_published", label: "Published", type: "switch" },
         { name: "is_archived", label: "Archived", type: "switch" },
       ]}
+
       listColumns={(r) => (
         <div>
           <div className="font-medium">{r.name} {r.is_published ? <Badge variant="outline" className="ml-2">Published</Badge> : <Badge variant="secondary" className="ml-2">Draft</Badge>}</div>
