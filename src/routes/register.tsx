@@ -266,7 +266,7 @@ function RegisterPage() {
             {step === 3 && (
               <>
                 <h2 className="font-display text-lg font-semibold">Program information</h2>
-                <Grid2><Field label="Student ID"><Input value={f.student_id} onChange={(e) => set("student_id", e.target.value)} /></Field>
+                <Grid2><Field label="Student ID *"><Input value={f.student_id} onChange={(e) => set("student_id", e.target.value)} required /></Field>
                 <Field label="Generation *">
                   <Select value={f.generation} onValueChange={(v) => set("generation", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
