@@ -48,12 +48,13 @@ function useFeatured() {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles_public" as any)
-        .select("id, first_name, last_name, generation, program_type, avatar_url, city, country")
-        .eq("is_featured", true).limit(6);
-      return (data ?? []) as unknown as Array<{ id: string; first_name: string; last_name: string; generation: number | null; program_type: string | null; avatar_url: string | null; city: string | null; country: string | null }>;
+        .select("id, first_name, last_name, generation, program_type, major, avatar_url, city, country, featured_caption")
+        .eq("is_featured", true).limit(8);
+      return (data ?? []) as unknown as Array<{ id: string; first_name: string; last_name: string; generation: number | null; program_type: string | null; major: string | null; avatar_url: string | null; city: string | null; country: string | null; featured_caption: string | null }>;
     },
   });
 }
+
 
 function useStories() {
   return useQuery({
