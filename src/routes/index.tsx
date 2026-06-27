@@ -23,18 +23,13 @@ function useStats() {
   return useQuery({
     queryKey: ["landing-stats"],
     queryFn: async () => {
-      const pub = supabase.from("profiles_public" as any);
-      const [alumni, students, generations, countries] = await Promise.all([
-        pub.select("id", { count: "exact", head: true }).lte("generation", 27),
-        pub.select("id", { count: "exact", head: true }).gte("generation", 28),
-        pub.select("generation").not("generation", "is", null),
-        pub.select("country").not("country", "is", null),
-      ]);
-      const genSet = new Set(((generations.data ?? []) as unknown as Array<{ generation: number | null }>).map((r) => r.generation));
-      const countrySet = new Set(((countries.data ?? []) as unknown as Array<{ country: string | null }>).map((r) => r.country?.trim().toLowerCase()).filter(Boolean));
+      const { data } = await supabase.from("profiles_public" as any).select("generation, country").limit(5000);
+      const rows = (data ?? []) as unknown as Array<{ generation: number | null; country: string | null }>;
+      const genSet = new Set(rows.map((r) => r.generation).filter(Boolean));
+      const countrySet = new Set(rows.map((r) => r.country?.trim().toLowerCase()).filter(Boolean));
       return {
-        alumni: alumni.count ?? 0,
-        students: students.count ?? 0,
+        alumni: rows.filter((r) => (r.generation ?? 0) <= 27).length,
+        students: rows.filter((r) => (r.generation ?? 0) >= 28).length,
         generations: genSet.size,
         countries: countrySet.size,
         companies: 0,
