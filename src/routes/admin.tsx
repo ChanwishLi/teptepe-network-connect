@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { useMediaUrl } from "@/lib/media";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — TEP-TEPE Alumni Network" }] }),
@@ -167,6 +168,7 @@ type Field = { name: string; label: string; type?: "text" | "textarea" | "date" 
 
 function ImageUploadField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [uploading, setUploading] = useState(false);
+  const previewUrl = useMediaUrl(value);
   const handleFile = async (file: File) => {
     setUploading(true);
     try {
@@ -174,10 +176,7 @@ function ImageUploadField({ value, onChange }: { value: string; onChange: (v: st
       const path = `uploads/${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
       if (error) throw error;
-      // Bucket is private — generate a long-lived signed URL (~10 years) so <img src> works.
-      const { data: signed, error: signErr } = await supabase.storage.from("media").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
-      if (signErr || !signed) throw signErr ?? new Error("Could not sign URL");
-      onChange(signed.signedUrl);
+      onChange(path);
       toast.success("Image uploaded");
     } catch (e: any) { toast.error(e.message); }
     finally { setUploading(false); }
@@ -185,7 +184,7 @@ function ImageUploadField({ value, onChange }: { value: string; onChange: (v: st
 
   return (
     <div className="space-y-2">
-      {value && <img src={value} alt="" className="h-32 w-full rounded-md object-cover border border-border" />}
+      {previewUrl && <img src={previewUrl} alt="" className="h-32 w-full rounded-md object-cover border border-border" />}
       <div className="flex items-center gap-2">
         <Input type="file" accept="image/*" disabled={uploading} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
         {value && <Button type="button" size="sm" variant="ghost" onClick={() => onChange("")}>Clear</Button>}
