@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { MediaImage } from "@/components/media-image";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export const Route = createFileRoute("/stories/$id")({
   component: StoryDetail,
 });
@@ -15,10 +17,12 @@ function StoryDetail() {
   const { data, isLoading } = useQuery({
     queryKey: ["story", id],
     queryFn: async () => {
-      const bySlug = await supabase.from("success_stories").select("*").eq("slug", id).eq("is_published", true).maybeSingle();
-      if (bySlug.data) return bySlug.data;
-      const byId = await supabase.from("success_stories").select("*").eq("id", id).eq("is_published", true).maybeSingle();
-      return byId.data;
+      const query = supabase.from("success_stories").select("*").eq("is_published", true);
+      const { data, error } = UUID_RE.test(id)
+        ? await query.or(`slug.eq.${id},id.eq.${id}`).maybeSingle()
+        : await query.eq("slug", id).maybeSingle();
+      if (error) throw error;
+      return data;
     },
   });
 

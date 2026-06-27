@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useDeferredValue, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/site-shell";
 import { Card } from "@/components/ui/card";
@@ -25,9 +25,11 @@ function DirectoryPage() {
   const [major, setMajor] = useState<string>("all");
   const [country, setCountry] = useState("");
   const [mentor, setMentor] = useState<string>("all");
+  const deferredQ = useDeferredValue(q.trim());
+  const deferredCountry = useDeferredValue(country.trim());
 
   const { data, isLoading } = useQuery({
-    queryKey: ["directory", { q, generation, program, major, country, mentor }],
+    queryKey: ["directory", { q: deferredQ, generation, program, major, country: deferredCountry, mentor }],
     queryFn: async () => {
       let query = supabase
         .from("profiles_public" as any)
@@ -37,9 +39,9 @@ function DirectoryPage() {
       if (generation !== "all") query = query.eq("generation", parseInt(generation));
       if (program !== "all") query = query.eq("program_type", program as any);
       if (major !== "all") query = query.eq("major", major as any);
-      if (country) query = query.ilike("country", `%${country}%`);
-      if (q) {
-        const like = `%${q}%`;
+      if (deferredCountry) query = query.ilike("country", `%${deferredCountry}%`);
+      if (deferredQ) {
+        const like = `%${deferredQ}%`;
         query = query.or(`first_name.ilike.${like},last_name.ilike.${like},major.ilike.${like}`);
       }
       const { data, error } = await query;
