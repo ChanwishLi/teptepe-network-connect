@@ -6,7 +6,11 @@ const KNOWN_MEDIA_BUCKETS = ["media", "event-banners", "story-images", "avatars"
 
 function extractStorageRef(value: string, fallbackBucket: string) {
   if (!value) return null;
-  if (!/^https?:\/\//i.test(value)) return { bucket: fallbackBucket, path: value.replace(/^\/+/, "") };
+  if (!/^https?:\/\//i.test(value)) {
+    const path = value.replace(/^\/+/, "");
+    const explicitBucket = KNOWN_MEDIA_BUCKETS.find((b) => path === b || path.startsWith(`${b}/`));
+    return explicitBucket ? { bucket: explicitBucket, path: path.slice(explicitBucket.length).replace(/^\/+/, "") } : { bucket: fallbackBucket, path };
+  }
 
   try {
     const url = new URL(value);
