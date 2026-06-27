@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/site-shell";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
+import { MediaImage } from "@/components/media-image";
 
 export const Route = createFileRoute("/events/")({
   head: () => ({
@@ -52,28 +53,30 @@ function EventsPage() {
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {data.map((e: any) => (
-              <Link key={e.id} to="/events/$id" params={{ id: e.slug || e.id }} preload="intent">
-                <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
-                  {e.banner_url ? (
-                    <img src={e.banner_url} alt="" className="h-44 w-full object-cover" />
-                  ) : (
-                    <div className="h-44 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
-                  )}
-                  <div className="p-5">
-                    <div className="text-xs uppercase tracking-wider text-primary">
-                      {new Date(e.event_date).toLocaleDateString(undefined, { dateStyle: "medium" })}
-                      {e.event_time && ` · ${e.event_time}`}
-                    </div>
-                    <h3 className="mt-2 font-display text-xl font-semibold">{e.name}</h3>
-                    {e.location && <div className="mt-1 text-sm text-muted-foreground">{e.location}</div>}
-                    {e.description && <p className="mt-3 text-sm text-muted-foreground line-clamp-3">{e.description}</p>}
-                  </div>
-                </Card>
-              </Link>
+              <EventCard key={e.id} event={e} />
             ))}
           </div>
         )}
       </section>
     </PageShell>
+  );
+}
+
+function EventCard({ event: e }: { event: any }) {
+  return (
+    <Link to="/events/$id" params={{ id: e.slug || e.id }} preload="intent">
+      <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
+        <MediaImage value={e.banner_url} alt="" className="h-44 w-full object-cover" fallbackClassName="h-44 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
+        <div className="p-5">
+          <div className="text-xs uppercase tracking-wider text-primary">
+            {new Date(e.event_date).toLocaleDateString(undefined, { dateStyle: "medium" })}
+            {e.event_time && ` · ${e.event_time}`}
+          </div>
+          <h3 className="mt-2 font-display text-xl font-semibold">{e.name}</h3>
+          {e.location && <div className="mt-1 text-sm text-muted-foreground">{e.location}</div>}
+          {e.description && <p className="mt-3 text-sm text-muted-foreground line-clamp-3">{e.description}</p>}
+        </div>
+      </Card>
+    </Link>
   );
 }

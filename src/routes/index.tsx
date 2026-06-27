@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Users, GraduationCap, Globe, Building2, Calendar } from "lucide-react";
 import { useAvatarUrl } from "@/lib/avatar";
+import { MediaImage } from "@/components/media-image";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,18 +23,13 @@ function useStats() {
   return useQuery({
     queryKey: ["landing-stats"],
     queryFn: async () => {
-      const pub = supabase.from("profiles_public" as any);
-      const [alumni, students, generations, countries] = await Promise.all([
-        pub.select("id", { count: "exact", head: true }).lte("generation", 27),
-        pub.select("id", { count: "exact", head: true }).gte("generation", 28),
-        pub.select("generation").not("generation", "is", null),
-        pub.select("country").not("country", "is", null),
-      ]);
-      const genSet = new Set(((generations.data ?? []) as unknown as Array<{ generation: number | null }>).map((r) => r.generation));
-      const countrySet = new Set(((countries.data ?? []) as unknown as Array<{ country: string | null }>).map((r) => r.country?.trim().toLowerCase()).filter(Boolean));
+      const { data } = await supabase.from("profiles_public" as any).select("generation, country").limit(5000);
+      const rows = (data ?? []) as unknown as Array<{ generation: number | null; country: string | null }>;
+      const genSet = new Set(rows.map((r) => r.generation).filter(Boolean));
+      const countrySet = new Set(rows.map((r) => r.country?.trim().toLowerCase()).filter(Boolean));
       return {
-        alumni: alumni.count ?? 0,
-        students: students.count ?? 0,
+        alumni: rows.filter((r) => (r.generation ?? 0) <= 27).length,
+        students: rows.filter((r) => (r.generation ?? 0) >= 28).length,
         generations: genSet.size,
         countries: countrySet.size,
         companies: 0,
@@ -190,17 +186,7 @@ function Landing() {
           <SectionHeader title="Success stories" subtitle="Voices from our alumni" linkTo="/stories" linkLabel="All stories" />
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
             {stories.data!.map((s: any) => (
-              <Link key={s.id} to="/stories/$id" params={{ id: s.slug || s.id }} preload="intent">
-                <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
-                  {s.image_url && <img src={s.image_url} alt="" className="h-44 w-full object-cover" />}
-                  <div className="p-5">
-                    <div className="text-xs uppercase tracking-wider text-primary">TEP #{s.generation} · {s.company}</div>
-                    <h3 className="mt-2 font-display text-xl font-semibold">{s.title}</h3>
-                    <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{s.summary || s.content}</p>
-                    <div className="mt-3 text-sm font-medium">— {s.alumni_name}</div>
-                  </div>
-                </Card>
-              </Link>
+              <HomeStoryCard key={s.id} story={s} />
             ))}
           </div>
         </section>
@@ -212,17 +198,7 @@ function Landing() {
           <SectionHeader title="Upcoming events" subtitle="Reconnect in person and online" linkTo="/events" linkLabel="All events" />
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {events.data!.map((e: any) => (
-              <Link key={e.id} to="/events/$id" params={{ id: e.slug || e.id }} preload="intent">
-                <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
-                  {e.banner_url && <img src={e.banner_url} alt="" className="h-40 w-full object-cover" />}
-                  <div className="p-5">
-                    <div className="text-xs uppercase tracking-wider text-primary">{new Date(e.event_date).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}</div>
-                    <h3 className="mt-2 font-display text-lg font-semibold">{e.name}</h3>
-                    <p className="mt-1 text-xs text-muted-foreground">{e.location}</p>
-                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{e.description}</p>
-                  </div>
-                </Card>
-              </Link>
+              <HomeEventCard key={e.id} event={e} />
             ))}
           </div>
         </section>
@@ -257,6 +233,38 @@ function Landing() {
         </section>
       )}
     </PageShell>
+  );
+}
+
+function HomeStoryCard({ story: s }: { story: any }) {
+  return (
+    <Link to="/stories/$id" params={{ id: s.slug || s.id }} preload="intent">
+      <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
+        <MediaImage value={s.image_url} alt="" className="h-44 w-full object-cover" fallbackClassName="h-44 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
+        <div className="p-5">
+          <div className="text-xs uppercase tracking-wider text-primary">TEP #{s.generation} · {s.company}</div>
+          <h3 className="mt-2 font-display text-xl font-semibold">{s.title}</h3>
+          <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{s.summary || s.content}</p>
+          <div className="mt-3 text-sm font-medium">— {s.alumni_name}</div>
+        </div>
+      </Card>
+    </Link>
+  );
+}
+
+function HomeEventCard({ event: e }: { event: any }) {
+  return (
+    <Link to="/events/$id" params={{ id: e.slug || e.id }} preload="intent">
+      <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
+        <MediaImage value={e.banner_url} alt="" className="h-40 w-full object-cover" fallbackClassName="h-40 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
+        <div className="p-5">
+          <div className="text-xs uppercase tracking-wider text-primary">{new Date(e.event_date).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}</div>
+          <h3 className="mt-2 font-display text-lg font-semibold">{e.name}</h3>
+          <p className="mt-1 text-xs text-muted-foreground">{e.location}</p>
+          <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{e.description}</p>
+        </div>
+      </Card>
+    </Link>
   );
 }
 
