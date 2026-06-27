@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/site-shell";
 import { Card } from "@/components/ui/card";
 import { BookOpen } from "lucide-react";
+import { useMediaUrl } from "@/lib/media";
 
 export const Route = createFileRoute("/stories/")({
   head: () => ({ meta: [{ title: "Success Stories — TEP-TEPE Alumni Network" }] }),
@@ -39,21 +40,28 @@ function StoriesPage() {
         ) : (
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {data.map((s: any) => (
-              <Link key={s.id} to="/stories/$id" params={{ id: s.slug || s.id }} preload="intent">
-                <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
-                  {s.image_url ? <img src={s.image_url} alt="" className="h-44 w-full object-cover" /> : <div className="h-44 w-full bg-gradient-to-br from-primary/20 to-primary/5" />}
-                  <div className="p-5">
-                    <div className="text-xs uppercase tracking-wider text-primary">TEP #{s.generation} · {s.company}</div>
-                    <h3 className="mt-2 font-display text-xl font-semibold">{s.title}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{s.summary || s.content}</p>
-                    <div className="mt-3 text-sm font-medium">— {s.alumni_name}</div>
-                  </div>
-                </Card>
-              </Link>
+              <StoryCard key={s.id} story={s} />
             ))}
           </div>
         )}
       </section>
     </PageShell>
+  );
+}
+
+function StoryCard({ story: s }: { story: any }) {
+  const imageUrl = useMediaUrl(s.image_url);
+  return (
+    <Link to="/stories/$id" params={{ id: s.slug || s.id }} preload="intent">
+      <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
+        {imageUrl ? <img src={imageUrl} alt="" loading="lazy" className="h-44 w-full object-cover" /> : <div className="h-44 w-full bg-gradient-to-br from-primary/20 to-primary/5" />}
+        <div className="p-5">
+          <div className="text-xs uppercase tracking-wider text-primary">TEP #{s.generation} · {s.company}</div>
+          <h3 className="mt-2 font-display text-xl font-semibold">{s.title}</h3>
+          <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{s.summary || s.content}</p>
+          <div className="mt-3 text-sm font-medium">— {s.alumni_name}</div>
+        </div>
+      </Card>
+    </Link>
   );
 }

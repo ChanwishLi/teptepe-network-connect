@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink } from "lucide-react";
+import { useMediaUrl } from "@/lib/media";
 
 export const Route = createFileRoute("/stories/$id")({
   component: StoryDetail,
@@ -20,6 +21,7 @@ function StoryDetail() {
       return byId.data;
     },
   });
+  const imageUrl = useMediaUrl(data?.image_url);
 
   if (isLoading) return <PageShell><div className="mx-auto max-w-3xl px-4 py-16 text-sm text-muted-foreground">Loading…</div></PageShell>;
   if (!data) return <PageShell><div className="mx-auto max-w-3xl px-4 py-16">Story not found.</div></PageShell>;
@@ -28,7 +30,7 @@ function StoryDetail() {
     <PageShell>
       <article className="mx-auto max-w-3xl px-4 py-12 lg:px-8">
         <Button asChild variant="ghost" size="sm" className="mb-6"><Link to="/stories"><ArrowLeft className="mr-1.5 h-4 w-4" /> All stories</Link></Button>
-        {data.image_url && <img src={data.image_url} alt="" className="mb-8 aspect-[16/7] w-full rounded-lg object-cover" />}
+        {imageUrl && <img src={imageUrl} alt="" className="mb-8 aspect-[16/7] w-full rounded-lg object-cover" />}
         <div className="text-xs uppercase tracking-[0.2em] text-primary">TEP #{data.generation} · {data.company}</div>
         <h1 className="mt-3 font-display text-4xl font-semibold leading-tight sm:text-5xl">{data.title}</h1>
         <div className="mt-3 text-sm font-medium text-muted-foreground">— {data.alumni_name}</div>

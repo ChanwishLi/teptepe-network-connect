@@ -11,6 +11,8 @@ export function useAvatarUrl(pathOrUrl: string | null | undefined) {
     queryKey: ["avatar-url", pathOrUrl],
     enabled: !!pathOrUrl,
     staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+    retry: false,
     queryFn: async () => {
       if (!pathOrUrl) return null;
       if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
