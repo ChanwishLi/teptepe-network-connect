@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Users, GraduationCap, Globe, Building2, Calendar } from "lucide-react";
 import { useAvatarUrl } from "@/lib/avatar";
-import { useMediaUrl } from "@/lib/media";
+import { MediaImage } from "@/components/media-image";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -242,11 +242,10 @@ function Landing() {
 }
 
 function HomeStoryCard({ story: s }: { story: any }) {
-  const imageUrl = useMediaUrl(s.image_url);
   return (
     <Link to="/stories/$id" params={{ id: s.slug || s.id }} preload="intent">
       <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
-        {imageUrl && <img src={imageUrl} alt="" loading="lazy" className="h-44 w-full object-cover" />}
+        <MediaImage value={s.image_url} alt="" className="h-44 w-full object-cover" fallbackClassName="h-44 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
         <div className="p-5">
           <div className="text-xs uppercase tracking-wider text-primary">TEP #{s.generation} · {s.company}</div>
           <h3 className="mt-2 font-display text-xl font-semibold">{s.title}</h3>
@@ -259,11 +258,10 @@ function HomeStoryCard({ story: s }: { story: any }) {
 }
 
 function HomeEventCard({ event: e }: { event: any }) {
-  const imageUrl = useMediaUrl(e.banner_url);
   return (
     <Link to="/events/$id" params={{ id: e.slug || e.id }} preload="intent">
       <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
-        {imageUrl && <img src={imageUrl} alt="" loading="lazy" className="h-40 w-full object-cover" />}
+        <MediaImage value={e.banner_url} alt="" className="h-40 w-full object-cover" fallbackClassName="h-40 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
         <div className="p-5">
           <div className="text-xs uppercase tracking-wider text-primary">{new Date(e.event_date).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}</div>
           <h3 className="mt-2 font-display text-lg font-semibold">{e.name}</h3>
