@@ -25,12 +25,12 @@ function useStats() {
     queryFn: async () => {
       const { data } = await supabase.from("profiles_public" as any).select("generation, country").limit(5000);
       const rows = (data ?? []) as unknown as Array<{ generation: number | null; country: string | null }>;
-      const genSet = new Set(rows.map((r) => r.generation).filter(Boolean));
       const countrySet = new Set(rows.map((r) => r.country?.trim().toLowerCase()).filter(Boolean));
+      // Base: 31 generations in 2026, auto-increments each new calendar year
+      const generations = 31 + Math.max(0, new Date().getFullYear() - 2026);
       return {
         alumni: rows.filter((r) => (r.generation ?? 0) <= 27).length,
-        students: rows.filter((r) => (r.generation ?? 0) >= 28).length,
-        generations: genSet.size,
+        generations,
         countries: countrySet.size,
         companies: 0,
       };
@@ -150,11 +150,10 @@ function Landing() {
 
       {/* Stats */}
       <section className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
             { icon: Users, label: "Alumni", value: stats.data?.alumni ?? 0 },
-            { icon: GraduationCap, label: "Current students", value: stats.data?.students ?? 0 },
-            { icon: Calendar, label: "Generations", value: stats.data?.generations ?? 0 },
+            { icon: Calendar, label: "Generations", value: stats.data?.generations ?? 31 },
             { icon: Globe, label: "Countries", value: stats.data?.countries ?? 0 },
             { icon: Building2, label: "Companies", value: stats.data?.companies ?? 0 },
           ].map(({ icon: Icon, label, value }) => (
