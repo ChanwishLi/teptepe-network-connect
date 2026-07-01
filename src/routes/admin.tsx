@@ -167,13 +167,15 @@ function MembersAdmin() {
 type Field = { name: string; label: string; type?: "text" | "textarea" | "date" | "number" | "url" | "switch" | "image"; rows?: number; hint?: string };
 
 function ImageUploadField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
   const previewUrl = useMediaUrl(value);
   const handleFile = async (file: File) => {
+    if (!user) { toast.error("You must be signed in to upload"); return; }
     setUploading(true);
     try {
       const ext = file.name.split(".").pop() ?? "jpg";
-      const path = `uploads/${crypto.randomUUID()}.${ext}`;
+      const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage.from("media").upload(path, file, { upsert: false, contentType: file.type });
       if (error) throw error;
       onChange(path);
@@ -181,6 +183,7 @@ function ImageUploadField({ value, onChange }: { value: string; onChange: (v: st
     } catch (e: any) { toast.error(e.message); }
     finally { setUploading(false); }
   };
+
 
   return (
     <div className="space-y-2">
