@@ -1,7 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useDeferredValue, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useMemo, useState } from "react";
 import { PageShell } from "@/components/site-shell";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, X } from "lucide-react";
 import { PROGRAM_TYPES, MAJORS, GENERATIONS, generationStatus } from "@/lib/constants";
-import { useAvatarUrl } from "@/lib/avatar";
+import { visibleAlumni, type Alumni } from "@/lib/alumni";
+import { driveImageUrl } from "@/lib/drive";
 
 export const Route = createFileRoute("/directory")({
   head: () => ({ meta: [{ title: "Alumni Directory — TEP-TEPE" }, { name: "description", content: "Search and connect with TEP-TEPE alumni around the world." }] }),
@@ -19,49 +18,39 @@ export const Route = createFileRoute("/directory")({
 });
 
 function DirectoryPage() {
+  const all = useMemo(() => visibleAlumni(), []);
   const [q, setQ] = useState("");
   const [generation, setGeneration] = useState<string>("all");
   const [program, setProgram] = useState<string>("all");
   const [major, setMajor] = useState<string>("all");
   const [country, setCountry] = useState("");
   const [mentor, setMentor] = useState<string>("all");
-  const deferredQ = useDeferredValue(q.trim());
-  const deferredCountry = useDeferredValue(country.trim());
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["directory", { q: deferredQ, generation, program, major, country: deferredCountry, mentor }],
-    queryFn: async () => {
-      let query = supabase
-        .from("profiles_public" as any)
-        .select("id, first_name, last_name, generation, program_type, major, country, city, avatar_url, skills, available_as_mentor")
-        .order("generation", { ascending: false })
-        .limit(60);
-      if (generation !== "all") query = query.eq("generation", parseInt(generation));
-      if (program !== "all") query = query.eq("program_type", program as any);
-      if (major !== "all") query = query.eq("major", major as any);
-      if (deferredCountry) query = query.ilike("country", `%${deferredCountry}%`);
-      if (deferredQ) {
-        const like = `%${deferredQ}%`;
-        query = query.or(`first_name.ilike.${like},last_name.ilike.${like},major.ilike.${like}`);
+  const results = useMemo(() => {
+    const qq = q.trim().toLowerCase();
+    const cc = country.trim().toLowerCase();
+    return all.filter((a) => {
+      if (generation !== "all" && String(a.generation ?? "") !== generation) return false;
+      if (program !== "all" && a.program_type !== program) return false;
+      if (major !== "all" && a.major !== major) return false;
+      if (cc && !(a.country ?? "").toLowerCase().includes(cc)) return false;
+      if (mentor === "yes" && !a.available_as_mentor) return false;
+      if (qq) {
+        const hay = `${a.first_name} ${a.last_name} ${a.preferred_name ?? ""} ${a.major ?? ""} ${(a.skills ?? []).join(" ")} ${(a.expertise ?? []).join(" ")}`.toLowerCase();
+        if (!hay.includes(qq)) return false;
       }
-      const { data, error } = await query;
-      if (error) throw error;
-      let rows = (data ?? []) as any[];
-      if (mentor === "yes") rows = rows.filter((r) => r.available_as_mentor);
-      return rows;
-    },
-  });
+      return true;
+    });
+  }, [all, q, generation, program, major, country, mentor]);
 
   const clearFilters = () => { setQ(""); setGeneration("all"); setProgram("all"); setMajor("all"); setCountry(""); setMentor("all"); };
 
   return (
     <PageShell>
       <div className="mx-auto max-w-7xl px-4 py-10 lg:px-8">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h1 className="font-display text-4xl font-bold lg:text-5xl">Alumni Directory</h1>
-            <p className="mt-2 text-muted-foreground">Browse fellow TEP-TEPE alumni around the world.</p>
-          </div>
+        <div>
+          <h1 className="font-display text-4xl font-bold lg:text-5xl">Alumni Directory</h1>
+          <p className="mt-2 text-muted-foreground">Browse fellow TEP-TEPE alumni around the world.</p>
         </div>
 
         <Card className="mt-8 p-4 lg:p-6">
@@ -80,14 +69,14 @@ function DirectoryPage() {
             <FilterSelect label="Mentor" value={mentor} onChange={setMentor} options={[{ v: "all", l: "All" }, { v: "yes", l: "Available as mentor" }]} />
           </div>
           <div className="mt-3 flex items-center justify-between">
-            <div className="text-xs text-muted-foreground">{isLoading ? "Searching…" : `${data?.length ?? 0} results`}</div>
+            <div className="text-xs text-muted-foreground">{results.length} results</div>
             <Button variant="ghost" size="sm" onClick={clearFilters}><X className="mr-1 h-3.5 w-3.5" /> Clear</Button>
           </div>
         </Card>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {(data ?? []).map((p: any) => <AlumniCard key={p.id} p={p} />)}
-          {!isLoading && data?.length === 0 && (
+          {results.map((p) => <AlumniCard key={p.id} p={p} />)}
+          {results.length === 0 && (
             <div className="col-span-full py-16 text-center text-sm text-muted-foreground">No alumni match your filters.</div>
           )}
         </div>
@@ -96,8 +85,8 @@ function DirectoryPage() {
   );
 }
 
-function AlumniCard({ p }: { p: any }) {
-  const avatar = useAvatarUrl(p.avatar_url);
+function AlumniCard({ p }: { p: Alumni }) {
+  const avatar = driveImageUrl(p.photo);
   return (
     <Link to="/alumni/$id" params={{ id: p.id }}>
       <Card className="group h-full overflow-hidden p-5 transition-all hover:border-primary/50 hover:shadow-md">
@@ -109,12 +98,12 @@ function AlumniCard({ p }: { p: any }) {
               </div>
             )}
           </div>
-          <Badge variant="outline" className="border-primary/30 text-primary">TEP #{p.generation}</Badge>
+          {p.generation && <Badge variant="outline" className="border-primary/30 text-primary">TEP #{p.generation}</Badge>}
         </div>
         <div className="mt-4">
           <div className="font-display text-lg font-semibold">{p.first_name} {p.last_name}</div>
-          <div className="text-xs text-muted-foreground">{p.program_type} · {p.major}</div>
-          <div className="mt-1 text-xs text-muted-foreground">{[p.city, p.country].filter(Boolean).join(", ")}</div>
+          <div className="text-xs text-muted-foreground">{[p.program_type, p.major].filter(Boolean).join(" · ")}</div>
+          <div className="mt-1 text-xs text-muted-foreground">{[p.address, p.country].filter(Boolean).join(", ")}</div>
         </div>
         {p.available_as_mentor && (
           <Badge className="mt-3 bg-[var(--gold)]/20 text-foreground hover:bg-[var(--gold)]/30">Mentor</Badge>

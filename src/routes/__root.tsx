@@ -9,7 +9,6 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { AuthProvider } from "@/lib/auth-context";
 import { Toaster } from "@/components/ui/sonner";
 import { RouteProgress } from "@/components/route-progress";
 
@@ -19,9 +18,6 @@ function NotFoundComponent() {
       <div className="max-w-md text-center">
         <h1 className="font-display text-7xl font-bold text-primary">404</h1>
         <h2 className="mt-4 text-xl font-semibold">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist.
-        </p>
         <a href="/" className="mt-6 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
           Go home
         </a>
@@ -57,9 +53,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:title", content: "TEP-TEPE Alumni Network" },
       { name: "twitter:description", content: "The official alumni network of the Thammasat International Engineering Program — bridging Thai and international engineers." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d3e1e1e1-3471-4b9a-8b6b-62c2dc36c027/id-preview-7b2527e8--cdcb0366-dd29-441b-b31d-7332a32f35a5.lovable.app-1782888439848.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/d3e1e1e1-3471-4b9a-8b6b-62c2dc36c027/id-preview-7b2527e8--cdcb0366-dd29-441b-b31d-7332a32f35a5.lovable.app-1782888439848.png" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "robots", content: "index, follow" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -87,11 +82,9 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RouteProgress />
-        <Outlet />
-        <Toaster />
-      </AuthProvider>
+      <RouteProgress />
+      <Outlet />
+      <Toaster />
     </QueryClientProvider>
   );
 }
