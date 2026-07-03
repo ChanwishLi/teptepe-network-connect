@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as StoriesRouteImport } from './routes/stories'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DirectoryRouteImport } from './routes/directory'
+import { Route as AdminTep2026RouteImport } from './routes/admin-tep2026'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoriesIndexRouteImport } from './routes/stories.index'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
@@ -32,6 +33,11 @@ const EventsRoute = EventsRouteImport.update({
 const DirectoryRoute = DirectoryRouteImport.update({
   id: '/directory',
   path: '/directory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTep2026Route = AdminTep2026RouteImport.update({
+  id: '/admin-tep2026',
+  path: '/admin-tep2026',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -67,6 +73,7 @@ const AlumniIdRoute = AlumniIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin-tep2026': typeof AdminTep2026Route
   '/directory': typeof DirectoryRoute
   '/events': typeof EventsRouteWithChildren
   '/stories': typeof StoriesRouteWithChildren
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin-tep2026': typeof AdminTep2026Route
   '/directory': typeof DirectoryRoute
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
@@ -88,6 +96,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin-tep2026': typeof AdminTep2026Route
   '/directory': typeof DirectoryRoute
   '/events': typeof EventsRouteWithChildren
   '/stories': typeof StoriesRouteWithChildren
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin-tep2026'
     | '/directory'
     | '/events'
     | '/stories'
@@ -112,6 +122,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin-tep2026'
     | '/directory'
     | '/alumni/$id'
     | '/events/$id'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin-tep2026'
     | '/directory'
     | '/events'
     | '/stories'
@@ -133,6 +145,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminTep2026Route: typeof AdminTep2026Route
   DirectoryRoute: typeof DirectoryRoute
   EventsRoute: typeof EventsRouteWithChildren
   StoriesRoute: typeof StoriesRouteWithChildren
@@ -160,6 +173,13 @@ declare module '@tanstack/react-router' {
       path: '/directory'
       fullPath: '/directory'
       preLoaderRoute: typeof DirectoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-tep2026': {
+      id: '/admin-tep2026'
+      path: '/admin-tep2026'
+      fullPath: '/admin-tep2026'
+      preLoaderRoute: typeof AdminTep2026RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -235,6 +255,7 @@ const StoriesRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminTep2026Route: AdminTep2026Route,
   DirectoryRoute: DirectoryRoute,
   EventsRoute: EventsRouteWithChildren,
   StoriesRoute: StoriesRouteWithChildren,
