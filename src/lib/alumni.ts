@@ -95,9 +95,9 @@ export type Story = {
   hidden?: boolean;
 };
 
-export const alumni = alumniData as Alumni[];
-export const events = eventsData as EventItem[];
-export const stories = storiesData as Story[];
+export const alumni: Alumni[] = alumniData as Alumni[];
+export const events: EventItem[] = eventsData as EventItem[];
+export const stories: Story[] = storiesData as Story[];
 
 export function visibleAlumni(): Alumni[] {
   return alumni.filter((a) => !a.hidden && a.directory_visible !== false);
