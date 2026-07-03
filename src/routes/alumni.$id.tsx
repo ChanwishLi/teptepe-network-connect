@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, Linkedin, Globe, Facebook, Instagram, MapPin } from "lucide-react";
 import { generationStatus } from "@/lib/constants";
 import { driveImageUrl } from "@/lib/drive";
-import { findAlumni } from "@/lib/alumni";
+import { findAlumni, type Alumni, type Job } from "@/lib/alumni";
 
 export const Route = createFileRoute("/alumni/$id")({
   loader: ({ params }) => {
@@ -24,9 +24,9 @@ export const Route = createFileRoute("/alumni/$id")({
 });
 
 function AlumniDetail() {
-  const p = Route.useLoaderData();
+  const p = Route.useLoaderData() as Alumni;
   const avatar = driveImageUrl(p.photo);
-  const cur = (p.jobs ?? []).find((j) => !j.end_year);
+  const cur = (p.jobs ?? []).find((j: Job) => !j.end_year);
 
   return (
     <PageShell>
@@ -89,7 +89,7 @@ function AlumniDetail() {
 
                 {(p.jobs?.length ?? 0) > 0 && (
                   <Section title="Employment">
-                    {p.jobs!.map((e, i) => (
+                    {p.jobs!.map((e: Job, i: number) => (
                       <div key={i} className="border-l-2 border-primary/30 py-1 pl-4">
                         <div className="font-medium">{e.position} {!e.end_year && <span className="ml-2 text-xs text-primary">Current</span>}</div>
                         <div className="text-xs text-muted-foreground">{[e.company, e.city, e.country, `${e.start_year ?? ""}${e.end_year ? `–${e.end_year}` : (e.start_year ? "–present" : "")}`].filter(Boolean).join(" · ")}</div>
@@ -101,8 +101,8 @@ function AlumniDetail() {
                 {((p.skills?.length ?? 0) + (p.expertise?.length ?? 0)) > 0 && (
                   <Section title="Skills & expertise">
                     <div className="flex flex-wrap gap-2">
-                      {p.skills?.map((s) => <Badge key={s} variant="secondary">{s}</Badge>)}
-                      {p.expertise?.map((s) => <Badge key={s} variant="outline">{s}</Badge>)}
+                      {p.skills?.map((s: string) => <Badge key={s} variant="secondary">{s}</Badge>)}
+                      {p.expertise?.map((s: string) => <Badge key={s} variant="outline">{s}</Badge>)}
                     </div>
                   </Section>
                 )}
