@@ -1,0 +1,80 @@
+[
+  {
+    "id": "a_930qw7c31hjb",
+    "first_name": "Natnapin",
+    "last_name": "Sae-Lim",
+    "preferred_name": "Yang",
+    "gender": "Female",
+    "date_of_birth": "2015-10-10",
+    "nationality": "Thai",
+    "photo": "https://drive.google.com/u/0/open?usp=forms_web&id=1rPOiN19v0VbC0lIsSao2-f4oaCk6M1II",
+    "email": "E",
+    "phone": "E",
+    "address": "E",
+    "province": "E",
+    "country": "E",
+    "linkedin": "E",
+    "facebook": "E",
+    "instagram": "E",
+    "website": "E",
+    "other_contact": "E",
+    "student_id": "12834791823",
+    "generation": 9,
+    "program_type": "TEP",
+    "major": "Civil Engineering",
+    "partner_university": "KU Leuven",
+    "partner_major": "134134",
+    "admission_year": "2004",
+    "graduation_year": "2007",
+    "additional_bachelors": "124",
+    "additional_masters": "124",
+    "additional_phd": "124",
+    "high_school": "124",
+    "high_school_gpax": "124",
+    "middle_school": "124",
+    "middle_school_gpax": "124",
+    "professional_summary": "124",
+    "skills": [
+      "124"
+    ],
+    "expertise": [
+      "124"
+    ],
+    "research_interests": "124",
+    "certifications": "124",
+    "jobs": [
+      {
+        "company": "124",
+        "position": "124",
+        "business_type": "124",
+        "industry": "1124",
+        "city": "124",
+        "country": "124",
+        "start_year": "124",
+        "end_year": "124"
+      },
+      {
+        "company": "124",
+        "position": "124",
+        "business_type": "124",
+        "industry": "124",
+        "city": "124",
+        "country": "142",
+        "start_year": "124",
+        "end_year": "124"
+      },
+      {
+        "company": "124",
+        "position": "142",
+        "business_type": "134",
+        "industry": "124",
+        "city": "124",
+        "country": "124",
+        "start_year": "124"
+      }
+    ],
+    "available_as_mentor": true,
+    "directory_visible": true,
+    "imported_at": "2026-07-03T15:22:52.295Z"
+  }
+]
