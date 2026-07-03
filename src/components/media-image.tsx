@@ -1,20 +1,18 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { useMediaUrl } from "@/lib/media";
+import { driveImageUrl } from "@/lib/drive";
 
 type MediaImageProps = {
   value: string | null | undefined;
   alt: string;
   className?: string;
   fallbackClassName?: string;
-  bucket?: string;
   loading?: "eager" | "lazy";
   placeholder?: ReactNode;
 };
 
-export function MediaImage({ value, alt, className, fallbackClassName, bucket = "media", loading = "lazy", placeholder }: MediaImageProps) {
-  const url = useMediaUrl(value, bucket);
+export function MediaImage({ value, alt, className, fallbackClassName, loading = "lazy", placeholder }: MediaImageProps) {
+  const url = driveImageUrl(value);
   const [failed, setFailed] = useState(false);
-
   useEffect(() => setFailed(false), [url]);
 
   if (!url || failed) {
@@ -24,15 +22,7 @@ export function MediaImage({ value, alt, className, fallbackClassName, bucket = 
       </div>
     );
   }
-
   return (
-    <img
-      src={url}
-      alt={alt}
-      loading={loading}
-      decoding="async"
-      className={className}
-      onError={() => setFailed(true)}
-    />
+    <img src={url} alt={alt} loading={loading} decoding="async" className={className} onError={() => setFailed(true)} />
   );
 }

@@ -1,105 +1,38 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth-context";
 import { PageShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Users, GraduationCap, Globe, Building2, Calendar } from "lucide-react";
-import { useAvatarUrl } from "@/lib/avatar";
+import { ArrowRight, Users, Globe, Building2, Calendar } from "lucide-react";
+import { visibleAlumni, visibleEvents, visibleStories } from "@/lib/alumni";
+import { driveImageUrl } from "@/lib/drive";
 import { MediaImage } from "@/components/media-image";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "TEP-TEPE Alumni Network — Bridging Thai and international engineers" },
-      { name: "description", content: "Browse fellow TEP-TEPE alumni around the world. Mentorship, events, internships, and the stories shaping our community." },
+      { name: "description", content: "The official alumni network of Thammasat's International Engineering Program. Browse alumni, events, and stories from around the world." },
     ],
   }),
   component: Landing,
 });
 
-function useStats() {
-  return useQuery({
-    queryKey: ["landing-stats"],
-    queryFn: async () => {
-      const { data } = await supabase.from("profiles_public" as any).select("generation, country").limit(5000);
-      const rows = (data ?? []) as unknown as Array<{ generation: number | null; country: string | null }>;
-      const countrySet = new Set(rows.map((r) => r.country?.trim().toLowerCase()).filter(Boolean));
-      // Base: 31 generations in 2026, auto-increments each new calendar year
-      const generations = 31 + Math.max(0, new Date().getFullYear() - 2026);
-      return {
-        alumni: rows.filter((r) => (r.generation ?? 0) <= 27).length,
-        generations,
-        countries: countrySet.size,
-        companies: 0,
-      };
-    },
-  });
-}
-
-function useFeatured() {
-  return useQuery({
-    queryKey: ["landing-featured"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles_public" as any)
-        .select("id, first_name, last_name, generation, program_type, major, avatar_url, city, country, featured_caption")
-        .eq("is_featured", true).limit(8);
-      return (data ?? []) as unknown as Array<{ id: string; first_name: string; last_name: string; generation: number | null; program_type: string | null; major: string | null; avatar_url: string | null; city: string | null; country: string | null; featured_caption: string | null }>;
-    },
-  });
-}
-
-
-function useStories() {
-  return useQuery({
-    queryKey: ["landing-stories"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("success_stories").select("id, slug, title, alumni_name, generation, company, summary, content, image_url")
-        .eq("is_published", true).order("created_at", { ascending: false }).limit(3);
-      return data ?? [];
-    },
-  });
-}
-
-function useEvents() {
-  return useQuery({
-    queryKey: ["landing-events"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("events").select("id, slug, name, description, event_date, location, banner_url")
-        .eq("is_published", true).eq("is_archived", false)
-        .gte("event_date", new Date().toISOString().slice(0, 10))
-        .order("event_date").limit(3);
-      return data ?? [];
-    },
-  });
-}
-
-function usePartners() {
-  return useQuery({
-    queryKey: ["landing-partners"],
-    queryFn: async () => {
-      const { data } = await supabase.from("industry_partners").select("*").order("display_order");
-      return data ?? [];
-    },
-  });
-}
-
 function Landing() {
-  const { user, loading } = useAuth();
-  const stats = useStats();
-  const featured = useFeatured();
-  const stories = useStories();
-  const events = useEvents();
-  const partners = usePartners();
-  const showAuthCTAs = !loading && !user;
+  const all = visibleAlumni();
+  const countries = new Set(all.map((a) => a.country?.trim().toLowerCase()).filter(Boolean)).size;
+  const companies = new Set(
+    all.flatMap((a) => (a.jobs ?? []).map((j) => j.company?.trim().toLowerCase()).filter(Boolean))
+  ).size;
+  const generations = 31 + Math.max(0, new Date().getFullYear() - 2026);
+  const featured = all.filter((a) => a.featured).slice(0, 8);
+  const upcomingEvents = visibleEvents()
+    .filter((e) => e.event_date >= new Date().toISOString().slice(0, 10))
+    .sort((a, b) => a.event_date.localeCompare(b.event_date))
+    .slice(0, 3);
+  const latestStories = visibleStories().slice(0, 3);
 
   return (
     <PageShell>
-      {/* Hero with building photo */}
       <section className="relative overflow-hidden border-b border-border">
         <div className="absolute inset-0 -z-10">
           <img
@@ -118,44 +51,27 @@ function Landing() {
               TEP-TEPE<br />Alumni Network
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-foreground/80 sm:text-xl">
-              To bridge the gap between Thai and international engineers. Discover graduates, find mentors, share opportunities, and stay close to the community that shaped you.
+              To bridge the gap between Thai and international engineers. Discover graduates, find mentors, and stay close to the community that shaped you.
             </p>
             <div className="mt-10 flex flex-wrap gap-3">
-              {showAuthCTAs ? (
-                <>
-                  <Button asChild size="lg">
-                    <Link to="/register">Join the network <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                  </Button>
-                  <Button asChild size="lg" variant="outline">
-                    <Link to="/directory">Explore alumni</Link>
-                  </Button>
-                  <Button asChild size="lg" variant="ghost">
-                    <Link to="/login">Login</Link>
-                  </Button>
-                </>
-              ) : user ? (
-                <>
-                  <Button asChild size="lg">
-                    <Link to="/directory">Explore alumni <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                  </Button>
-                  <Button asChild size="lg" variant="outline">
-                    <Link to="/events">Upcoming events</Link>
-                  </Button>
-                </>
-              ) : null}
+              <Button asChild size="lg">
+                <Link to="/directory">Explore alumni <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link to="/events">Upcoming events</Link>
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
       <section className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { icon: Users, label: "Alumni", value: stats.data?.alumni ?? 0 },
-            { icon: Calendar, label: "Generations", value: stats.data?.generations ?? 31 },
-            { icon: Globe, label: "Countries", value: stats.data?.countries ?? 0 },
-            { icon: Building2, label: "Companies", value: stats.data?.companies ?? 0 },
+            { icon: Users, label: "Alumni", value: all.length },
+            { icon: Calendar, label: "Generations", value: generations },
+            { icon: Globe, label: "Countries", value: countries },
+            { icon: Building2, label: "Companies", value: companies },
           ].map(({ icon: Icon, label, value }) => (
             <Card key={label} className="border-border bg-card p-5">
               <Icon className="h-5 w-5 text-primary" />
@@ -166,132 +82,78 @@ function Landing() {
         </div>
       </section>
 
-      {/* Featured alumni — portrait grid inspired by tep.engr.tu.ac.th/alumni */}
-      {(featured.data?.length ?? 0) > 0 && (
+      {featured.length > 0 && (
         <section className="border-y border-border bg-muted/30">
           <div className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
-            <SectionHeader title="Featured Alumni" subtitle="Recognising scholarships, achievements and leaders of our community" linkTo="/directory" linkLabel="View directory" />
+            <SectionHeader title="Featured Alumni" subtitle="Recognising achievements and leaders of our community" linkTo="/directory" linkLabel="View directory" />
             <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
-              {featured.data!.map((p) => <FeaturedCard key={p.id} p={p} />)}
+              {featured.map((p) => {
+                const url = driveImageUrl(p.photo);
+                const initials = `${p.first_name?.[0] ?? ""}${p.last_name?.[0] ?? ""}`.toUpperCase();
+                return (
+                  <Link key={p.id} to="/alumni/$id" params={{ id: p.id }} preload="intent" className="group block">
+                    <div className="aspect-[3/4] w-full overflow-hidden rounded-lg bg-muted ring-1 ring-border">
+                      {url ? (
+                        <img src={url} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center font-display text-4xl font-semibold text-muted-foreground">{initials}</div>
+                      )}
+                    </div>
+                    {p.featured_caption && <div className="mt-4 text-sm font-medium leading-snug text-foreground">{p.featured_caption}</div>}
+                    <div className={`${p.featured_caption ? "mt-2" : "mt-4"} font-display text-base font-semibold leading-tight`}>{p.first_name} {p.last_name}</div>
+                    <div className="mt-0.5 text-xs text-muted-foreground">{p.program_type}{p.generation ? ` #${p.generation}` : ""}{p.major ? ` · ${p.major}` : ""}</div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
       )}
 
-
-      {/* Stories */}
-      {(stories.data?.length ?? 0) > 0 && (
+      {latestStories.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
           <SectionHeader title="Success stories" subtitle="Voices from our alumni" linkTo="/stories" linkLabel="All stories" />
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
-            {stories.data!.map((s: any) => (
-              <HomeStoryCard key={s.id} story={s} />
+            {latestStories.map((s) => (
+              <Link key={s.id} to="/stories/$id" params={{ id: s.slug || s.id }} preload="intent">
+                <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
+                  <MediaImage value={s.image_url} alt="" className="h-44 w-full object-cover" fallbackClassName="h-44 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
+                  <div className="p-5">
+                    <div className="text-xs uppercase tracking-wider text-primary">{s.generation ? `TEP #${s.generation}` : ""}{s.company ? ` · ${s.company}` : ""}</div>
+                    <h3 className="mt-2 font-display text-xl font-semibold">{s.title}</h3>
+                    <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{s.summary || s.content}</p>
+                    <div className="mt-3 text-sm font-medium">— {s.alumni_name}</div>
+                  </div>
+                </Card>
+              </Link>
             ))}
           </div>
         </section>
       )}
 
-      {/* Events */}
-      {(events.data?.length ?? 0) > 0 && (
+      {upcomingEvents.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
           <SectionHeader title="Upcoming events" subtitle="Reconnect in person and online" linkTo="/events" linkLabel="All events" />
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {events.data!.map((e: any) => (
-              <HomeEventCard key={e.id} event={e} />
+            {upcomingEvents.map((e) => (
+              <Link key={e.id} to="/events/$id" params={{ id: e.slug || e.id }} preload="intent">
+                <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
+                  <MediaImage value={e.banner_url} alt="" className="h-40 w-full object-cover" fallbackClassName="h-40 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
+                  <div className="p-5">
+                    <div className="text-xs uppercase tracking-wider text-primary">{new Date(e.event_date).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}</div>
+                    <h3 className="mt-2 font-display text-lg font-semibold">{e.name}</h3>
+                    {e.location && <p className="mt-1 text-xs text-muted-foreground">{e.location}</p>}
+                    {e.description && <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{e.description}</p>}
+                  </div>
+                </Card>
+              </Link>
             ))}
           </div>
-        </section>
-      )}
-
-      {/* Partners */}
-      {(partners.data?.length ?? 0) > 0 && (
-        <section className="mx-auto max-w-7xl px-4 py-12 lg:px-8">
-          <h2 className="text-center text-xs uppercase tracking-[0.2em] text-muted-foreground">Industry partners</h2>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-6 opacity-80">
-            {partners.data!.map((p) => (
-              <a key={p.id} href={p.website ?? "#"} target="_blank" rel="noreferrer" className="text-sm font-semibold tracking-wide text-muted-foreground hover:text-foreground">
-                {p.logo_url ? <img src={p.logo_url} alt={p.name} className="h-8 w-auto" /> : p.name}
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {showAuthCTAs && (
-        <section className="mx-auto mt-12 max-w-7xl px-4 lg:px-8">
-          <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary to-primary/80 p-10 text-primary-foreground lg:p-16">
-            <div className="max-w-2xl">
-              <h2 className="font-display text-3xl font-semibold lg:text-5xl">Stay connected. Stronger together.</h2>
-              <p className="mt-4 text-base opacity-90">Update your profile, find a mentor, post an internship, and help the next generation of TEP-TEPE engineers find their footing.</p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Button asChild variant="secondary" size="lg"><Link to="/register">Create your profile</Link></Button>
-                <Button asChild variant="outline" size="lg" className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"><Link to="/directory">Browse alumni</Link></Button>
-              </div>
-            </div>
-          </Card>
         </section>
       )}
     </PageShell>
   );
 }
-
-function HomeStoryCard({ story: s }: { story: any }) {
-  return (
-    <Link to="/stories/$id" params={{ id: s.slug || s.id }} preload="intent">
-      <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
-        <MediaImage value={s.image_url} alt="" className="h-44 w-full object-cover" fallbackClassName="h-44 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
-        <div className="p-5">
-          <div className="text-xs uppercase tracking-wider text-primary">TEP #{s.generation} · {s.company}</div>
-          <h3 className="mt-2 font-display text-xl font-semibold">{s.title}</h3>
-          <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{s.summary || s.content}</p>
-          <div className="mt-3 text-sm font-medium">— {s.alumni_name}</div>
-        </div>
-      </Card>
-    </Link>
-  );
-}
-
-function HomeEventCard({ event: e }: { event: any }) {
-  return (
-    <Link to="/events/$id" params={{ id: e.slug || e.id }} preload="intent">
-      <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">
-        <MediaImage value={e.banner_url} alt="" className="h-40 w-full object-cover" fallbackClassName="h-40 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
-        <div className="p-5">
-          <div className="text-xs uppercase tracking-wider text-primary">{new Date(e.event_date).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}</div>
-          <h3 className="mt-2 font-display text-lg font-semibold">{e.name}</h3>
-          <p className="mt-1 text-xs text-muted-foreground">{e.location}</p>
-          <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{e.description}</p>
-        </div>
-      </Card>
-    </Link>
-  );
-}
-
-function FeaturedCard({ p }: { p: { id: string; first_name: string; last_name: string; generation: number | null; program_type: string | null; major: string | null; avatar_url: string | null; city: string | null; country: string | null; featured_caption: string | null } }) {
-  const url = useAvatarUrl(p.avatar_url);
-  const initials = `${p.first_name?.[0] ?? ""}${p.last_name?.[0] ?? ""}`.toUpperCase();
-  return (
-    <Link to="/alumni/$id" params={{ id: p.id }} preload="intent" className="group block">
-      <div className="aspect-[3/4] w-full overflow-hidden rounded-lg bg-muted ring-1 ring-border">
-        {url ? (
-          <img src={url} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center font-display text-4xl font-semibold text-muted-foreground">{initials}</div>
-        )}
-      </div>
-      {p.featured_caption && (
-        <div className="mt-4 text-sm font-medium leading-snug text-foreground">{p.featured_caption}</div>
-      )}
-      <div className={`${p.featured_caption ? "mt-2" : "mt-4"} font-display text-base font-semibold leading-tight`}>
-        {p.first_name} {p.last_name}
-      </div>
-      <div className="mt-0.5 text-xs text-muted-foreground">
-        {p.program_type}{p.generation ? ` #${p.generation}` : ""}{p.major ? ` · ${p.major}` : ""}
-      </div>
-    </Link>
-  );
-}
-
 
 function SectionHeader({ title, subtitle, linkTo, linkLabel }: { title: string; subtitle: string; linkTo: string; linkLabel: string }) {
   return (

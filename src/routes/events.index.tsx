@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/components/site-shell";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 import { MediaImage } from "@/components/media-image";
+import { visibleEvents, type EventItem } from "@/lib/alumni";
 
 export const Route = createFileRoute("/events/")({
   head: () => ({
@@ -17,20 +16,7 @@ export const Route = createFileRoute("/events/")({
 });
 
 function EventsPage() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["events", "published"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("events")
-        .select("id, slug, name, description, event_date, event_time, location, banner_url")
-        .eq("is_published", true)
-        .eq("is_archived", false)
-        .order("event_date", { ascending: true });
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-
+  const data = visibleEvents().sort((a, b) => a.event_date.localeCompare(b.event_date));
   return (
     <PageShell>
       <section className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
@@ -42,19 +28,15 @@ function EventsPage() {
           </p>
         </header>
 
-        {isLoading ? (
-          <div className="text-sm text-muted-foreground">Loading events…</div>
-        ) : !data || data.length === 0 ? (
+        {data.length === 0 ? (
           <Card className="flex flex-col items-center justify-center gap-2 border-dashed p-12 text-center">
             <Calendar className="h-8 w-8 text-muted-foreground" />
             <div className="font-medium">No upcoming events yet</div>
-            <p className="text-sm text-muted-foreground">Check back soon — new gatherings are posted regularly.</p>
+            <p className="text-sm text-muted-foreground">Check back soon.</p>
           </Card>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {data.map((e: any) => (
-              <EventCard key={e.id} event={e} />
-            ))}
+            {data.map((e) => <EventCard key={e.id} event={e} />)}
           </div>
         )}
       </section>
@@ -62,7 +44,7 @@ function EventsPage() {
   );
 }
 
-function EventCard({ event: e }: { event: any }) {
+function EventCard({ event: e }: { event: EventItem }) {
   return (
     <Link to="/events/$id" params={{ id: e.slug || e.id }} preload="intent">
       <Card className="h-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5">

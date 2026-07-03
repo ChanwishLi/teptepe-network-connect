@@ -1,34 +1,24 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { PageShell } from "@/components/site-shell";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, MapPin, ExternalLink } from "lucide-react";
 import { MediaImage } from "@/components/media-image";
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+import { findEvent } from "@/lib/alumni";
 
 export const Route = createFileRoute("/events/$id")({
+  loader: ({ params }) => {
+    const e = findEvent(params.id);
+    if (!e) throw notFound();
+    return e;
+  },
+  head: ({ loaderData }) => ({ meta: loaderData ? [{ title: `${loaderData.name} — TEP-TEPE Events` }] : [{ title: "Event — TEP-TEPE" }] }),
+  notFoundComponent: () => <PageShell><div className="mx-auto max-w-3xl px-4 py-16">Event not found.</div></PageShell>,
+  errorComponent: ({ error }) => <PageShell><div className="mx-auto max-w-3xl px-4 py-16">{error.message}</div></PageShell>,
   component: EventDetail,
 });
 
 function EventDetail() {
-  const { id } = Route.useParams();
-  const { data, isLoading } = useQuery({
-    queryKey: ["event", id],
-    queryFn: async () => {
-      const query = supabase.from("events").select("*").eq("is_published", true);
-      const { data, error } = UUID_RE.test(id)
-        ? await query.or(`slug.eq.${id},id.eq.${id}`).maybeSingle()
-        : await query.eq("slug", id).maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  if (isLoading) return <PageShell><div className="mx-auto max-w-3xl px-4 py-16 text-sm text-muted-foreground">Loading…</div></PageShell>;
-  if (!data) return <PageShell><div className="mx-auto max-w-3xl px-4 py-16">Event not found.</div></PageShell>;
-
+  const data = Route.useLoaderData();
   return (
     <PageShell>
       <article className="mx-auto max-w-3xl px-4 py-12 lg:px-8">
@@ -43,10 +33,10 @@ function EventDetail() {
           </span>
           {data.location && <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" /> {data.location}</span>}
         </div>
-        {(data as any).external_url && (
+        {data.external_url && (
           <div className="mt-6">
             <Button asChild>
-              <a href={(data as any).external_url} target="_blank" rel="noreferrer">
+              <a href={data.external_url} target="_blank" rel="noreferrer">
                 Visit event page <ExternalLink className="ml-1.5 h-4 w-4" />
               </a>
             </Button>
@@ -54,9 +44,7 @@ function EventDetail() {
         )}
         {data.description && <p className="mt-8 text-lg leading-relaxed text-muted-foreground">{data.description}</p>}
         {data.content && (
-          <div className="prose prose-neutral mt-8 max-w-none whitespace-pre-wrap text-base leading-relaxed">
-            {data.content}
-          </div>
+          <div className="prose prose-neutral mt-8 max-w-none whitespace-pre-wrap text-base leading-relaxed">{data.content}</div>
         )}
       </article>
     </PageShell>

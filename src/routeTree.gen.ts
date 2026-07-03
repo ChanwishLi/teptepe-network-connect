@@ -10,53 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StoriesRouteImport } from './routes/stories'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as RegisterRouteImport } from './routes/register'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as InternshipsRouteImport } from './routes/internships'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DirectoryRouteImport } from './routes/directory'
-import { Route as CompleteProfileRouteImport } from './routes/complete-profile'
-import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdminTep2026RouteImport } from './routes/admin-tep2026'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StoriesIndexRouteImport } from './routes/stories.index'
-import { Route as InternshipsIndexRouteImport } from './routes/internships.index'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as StoriesIdRouteImport } from './routes/stories.$id'
-import { Route as OpportunitiesNewRouteImport } from './routes/opportunities.new'
-import { Route as InternshipsNewRouteImport } from './routes/internships.new'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as AlumniIdRouteImport } from './routes/alumni.$id'
 
 const StoriesRoute = StoriesRouteImport.update({
   id: '/stories',
   path: '/stories',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InternshipsRoute = InternshipsRouteImport.update({
-  id: '/internships',
-  path: '/internships',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsRoute = EventsRouteImport.update({
@@ -69,14 +35,9 @@ const DirectoryRoute = DirectoryRouteImport.update({
   path: '/directory',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CompleteProfileRoute = CompleteProfileRouteImport.update({
-  id: '/complete-profile',
-  path: '/complete-profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AdminTep2026Route = AdminTep2026RouteImport.update({
+  id: '/admin-tep2026',
+  path: '/admin-tep2026',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -89,11 +50,6 @@ const StoriesIndexRoute = StoriesIndexRouteImport.update({
   path: '/',
   getParentRoute: () => StoriesRoute,
 } as any)
-const InternshipsIndexRoute = InternshipsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => InternshipsRoute,
-} as any)
 const EventsIndexRoute = EventsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -103,16 +59,6 @@ const StoriesIdRoute = StoriesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => StoriesRoute,
-} as any)
-const OpportunitiesNewRoute = OpportunitiesNewRouteImport.update({
-  id: '/opportunities/new',
-  path: '/opportunities/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InternshipsNewRoute = InternshipsNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => InternshipsRoute,
 } as any)
 const EventsIdRoute = EventsIdRouteImport.update({
   id: '/$id',
@@ -127,142 +73,83 @@ const AlumniIdRoute = AlumniIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
-  '/complete-profile': typeof CompleteProfileRoute
+  '/admin-tep2026': typeof AdminTep2026Route
   '/directory': typeof DirectoryRoute
   '/events': typeof EventsRouteWithChildren
-  '/internships': typeof InternshipsRouteWithChildren
-  '/login': typeof LoginRoute
-  '/profile': typeof ProfileRoute
-  '/register': typeof RegisterRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/stories': typeof StoriesRouteWithChildren
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
-  '/internships/new': typeof InternshipsNewRoute
-  '/opportunities/new': typeof OpportunitiesNewRoute
   '/stories/$id': typeof StoriesIdRoute
   '/events/': typeof EventsIndexRoute
-  '/internships/': typeof InternshipsIndexRoute
   '/stories/': typeof StoriesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
-  '/complete-profile': typeof CompleteProfileRoute
+  '/admin-tep2026': typeof AdminTep2026Route
   '/directory': typeof DirectoryRoute
-  '/login': typeof LoginRoute
-  '/profile': typeof ProfileRoute
-  '/register': typeof RegisterRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
-  '/internships/new': typeof InternshipsNewRoute
-  '/opportunities/new': typeof OpportunitiesNewRoute
   '/stories/$id': typeof StoriesIdRoute
   '/events': typeof EventsIndexRoute
-  '/internships': typeof InternshipsIndexRoute
   '/stories': typeof StoriesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
-  '/complete-profile': typeof CompleteProfileRoute
+  '/admin-tep2026': typeof AdminTep2026Route
   '/directory': typeof DirectoryRoute
   '/events': typeof EventsRouteWithChildren
-  '/internships': typeof InternshipsRouteWithChildren
-  '/login': typeof LoginRoute
-  '/profile': typeof ProfileRoute
-  '/register': typeof RegisterRoute
-  '/reset-password': typeof ResetPasswordRoute
   '/stories': typeof StoriesRouteWithChildren
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
-  '/internships/new': typeof InternshipsNewRoute
-  '/opportunities/new': typeof OpportunitiesNewRoute
   '/stories/$id': typeof StoriesIdRoute
   '/events/': typeof EventsIndexRoute
-  '/internships/': typeof InternshipsIndexRoute
   '/stories/': typeof StoriesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/admin'
-    | '/complete-profile'
+    | '/admin-tep2026'
     | '/directory'
     | '/events'
-    | '/internships'
-    | '/login'
-    | '/profile'
-    | '/register'
-    | '/reset-password'
     | '/stories'
     | '/alumni/$id'
     | '/events/$id'
-    | '/internships/new'
-    | '/opportunities/new'
     | '/stories/$id'
     | '/events/'
-    | '/internships/'
     | '/stories/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
-    | '/complete-profile'
+    | '/admin-tep2026'
     | '/directory'
-    | '/login'
-    | '/profile'
-    | '/register'
-    | '/reset-password'
     | '/alumni/$id'
     | '/events/$id'
-    | '/internships/new'
-    | '/opportunities/new'
     | '/stories/$id'
     | '/events'
-    | '/internships'
     | '/stories'
   id:
     | '__root__'
     | '/'
-    | '/admin'
-    | '/complete-profile'
+    | '/admin-tep2026'
     | '/directory'
     | '/events'
-    | '/internships'
-    | '/login'
-    | '/profile'
-    | '/register'
-    | '/reset-password'
     | '/stories'
     | '/alumni/$id'
     | '/events/$id'
-    | '/internships/new'
-    | '/opportunities/new'
     | '/stories/$id'
     | '/events/'
-    | '/internships/'
     | '/stories/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
-  CompleteProfileRoute: typeof CompleteProfileRoute
+  AdminTep2026Route: typeof AdminTep2026Route
   DirectoryRoute: typeof DirectoryRoute
   EventsRoute: typeof EventsRouteWithChildren
-  InternshipsRoute: typeof InternshipsRouteWithChildren
-  LoginRoute: typeof LoginRoute
-  ProfileRoute: typeof ProfileRoute
-  RegisterRoute: typeof RegisterRoute
-  ResetPasswordRoute: typeof ResetPasswordRoute
   StoriesRoute: typeof StoriesRouteWithChildren
   AlumniIdRoute: typeof AlumniIdRoute
-  OpportunitiesNewRoute: typeof OpportunitiesNewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -272,41 +159,6 @@ declare module '@tanstack/react-router' {
       path: '/stories'
       fullPath: '/stories'
       preLoaderRoute: typeof StoriesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/internships': {
-      id: '/internships'
-      path: '/internships'
-      fullPath: '/internships'
-      preLoaderRoute: typeof InternshipsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events': {
@@ -323,18 +175,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DirectoryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/complete-profile': {
-      id: '/complete-profile'
-      path: '/complete-profile'
-      fullPath: '/complete-profile'
-      preLoaderRoute: typeof CompleteProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
+    '/admin-tep2026': {
+      id: '/admin-tep2026'
+      path: '/admin-tep2026'
+      fullPath: '/admin-tep2026'
+      preLoaderRoute: typeof AdminTep2026RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -351,13 +196,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoriesIndexRouteImport
       parentRoute: typeof StoriesRoute
     }
-    '/internships/': {
-      id: '/internships/'
-      path: '/'
-      fullPath: '/internships/'
-      preLoaderRoute: typeof InternshipsIndexRouteImport
-      parentRoute: typeof InternshipsRoute
-    }
     '/events/': {
       id: '/events/'
       path: '/'
@@ -371,20 +209,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/stories/$id'
       preLoaderRoute: typeof StoriesIdRouteImport
       parentRoute: typeof StoriesRoute
-    }
-    '/opportunities/new': {
-      id: '/opportunities/new'
-      path: '/opportunities/new'
-      fullPath: '/opportunities/new'
-      preLoaderRoute: typeof OpportunitiesNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/internships/new': {
-      id: '/internships/new'
-      path: '/new'
-      fullPath: '/internships/new'
-      preLoaderRoute: typeof InternshipsNewRouteImport
-      parentRoute: typeof InternshipsRoute
     }
     '/events/$id': {
       id: '/events/$id'
@@ -416,20 +240,6 @@ const EventsRouteChildren: EventsRouteChildren = {
 const EventsRouteWithChildren =
   EventsRoute._addFileChildren(EventsRouteChildren)
 
-interface InternshipsRouteChildren {
-  InternshipsNewRoute: typeof InternshipsNewRoute
-  InternshipsIndexRoute: typeof InternshipsIndexRoute
-}
-
-const InternshipsRouteChildren: InternshipsRouteChildren = {
-  InternshipsNewRoute: InternshipsNewRoute,
-  InternshipsIndexRoute: InternshipsIndexRoute,
-}
-
-const InternshipsRouteWithChildren = InternshipsRoute._addFileChildren(
-  InternshipsRouteChildren,
-)
-
 interface StoriesRouteChildren {
   StoriesIdRoute: typeof StoriesIdRoute
   StoriesIndexRoute: typeof StoriesIndexRoute
@@ -445,19 +255,22 @@ const StoriesRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
-  CompleteProfileRoute: CompleteProfileRoute,
+  AdminTep2026Route: AdminTep2026Route,
   DirectoryRoute: DirectoryRoute,
   EventsRoute: EventsRouteWithChildren,
-  InternshipsRoute: InternshipsRouteWithChildren,
-  LoginRoute: LoginRoute,
-  ProfileRoute: ProfileRoute,
-  RegisterRoute: RegisterRoute,
-  ResetPasswordRoute: ResetPasswordRoute,
   StoriesRoute: StoriesRouteWithChildren,
   AlumniIdRoute: AlumniIdRoute,
-  OpportunitiesNewRoute: OpportunitiesNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
