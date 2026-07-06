@@ -87,7 +87,7 @@ function RegisterPage() {
       return true;
     }
     if (step === 4) return !!(f.professional_summary.trim() && f.skills.trim() && f.expertise.trim() && f.research_interests.trim() && f.certifications.trim());
-    if (step === 5) return !(f.company || f.position) || !!(f.company && f.position);
+    if (step === 5) return f.jobs.every((j) => (!j.company && !j.position) || (!!j.company && !!j.position));
     if (step === 7) return f.c_data && f.c_directory;
     return true;
   };
