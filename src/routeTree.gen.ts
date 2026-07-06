@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StoriesRouteImport } from './routes/stories'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DirectoryRouteImport } from './routes/directory'
 import { Route as AdminTep2026RouteImport } from './routes/admin-tep2026'
@@ -23,6 +24,11 @@ import { Route as AlumniIdRouteImport } from './routes/alumni.$id'
 const StoriesRoute = StoriesRouteImport.update({
   id: '/stories',
   path: '/stories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsRoute = EventsRouteImport.update({
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/admin-tep2026': typeof AdminTep2026Route
   '/directory': typeof DirectoryRoute
   '/events': typeof EventsRouteWithChildren
+  '/login': typeof LoginRoute
   '/stories': typeof StoriesRouteWithChildren
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin-tep2026': typeof AdminTep2026Route
   '/directory': typeof DirectoryRoute
+  '/login': typeof LoginRoute
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
   '/stories/$id': typeof StoriesIdRoute
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   '/admin-tep2026': typeof AdminTep2026Route
   '/directory': typeof DirectoryRoute
   '/events': typeof EventsRouteWithChildren
+  '/login': typeof LoginRoute
   '/stories': typeof StoriesRouteWithChildren
   '/alumni/$id': typeof AlumniIdRoute
   '/events/$id': typeof EventsIdRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/admin-tep2026'
     | '/directory'
     | '/events'
+    | '/login'
     | '/stories'
     | '/alumni/$id'
     | '/events/$id'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin-tep2026'
     | '/directory'
+    | '/login'
     | '/alumni/$id'
     | '/events/$id'
     | '/stories/$id'
@@ -135,6 +146,7 @@ export interface FileRouteTypes {
     | '/admin-tep2026'
     | '/directory'
     | '/events'
+    | '/login'
     | '/stories'
     | '/alumni/$id'
     | '/events/$id'
@@ -148,6 +160,7 @@ export interface RootRouteChildren {
   AdminTep2026Route: typeof AdminTep2026Route
   DirectoryRoute: typeof DirectoryRoute
   EventsRoute: typeof EventsRouteWithChildren
+  LoginRoute: typeof LoginRoute
   StoriesRoute: typeof StoriesRouteWithChildren
   AlumniIdRoute: typeof AlumniIdRoute
 }
@@ -159,6 +172,13 @@ declare module '@tanstack/react-router' {
       path: '/stories'
       fullPath: '/stories'
       preLoaderRoute: typeof StoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events': {
@@ -258,19 +278,10 @@ const rootRouteChildren: RootRouteChildren = {
   AdminTep2026Route: AdminTep2026Route,
   DirectoryRoute: DirectoryRoute,
   EventsRoute: EventsRouteWithChildren,
+  LoginRoute: LoginRoute,
   StoriesRoute: StoriesRouteWithChildren,
   AlumniIdRoute: AlumniIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
