@@ -68,6 +68,9 @@ function RegisterPage() {
   const updateEdu = (i: number, patch: Partial<EduEntry>) => setF((p) => ({ ...p, educations: p.educations.map((e, idx) => idx === i ? { ...e, ...patch } : e) }));
   const addEdu = () => setF((p) => ({ ...p, educations: [...p.educations, blankEdu()] }));
   const removeEdu = (i: number) => setF((p) => ({ ...p, educations: p.educations.filter((_, idx) => idx !== i) }));
+  const updateJob = (i: number, patch: Partial<JobEntry>) => setF((p) => ({ ...p, jobs: p.jobs.map((j, idx) => idx === i ? { ...j, ...patch } : j) }));
+  const addJob = () => setF((p) => ({ ...p, jobs: [...p.jobs, blankJob(false)] }));
+  const removeJob = (i: number) => setF((p) => ({ ...p, jobs: p.jobs.filter((_, idx) => idx !== i) }));
 
   const onAvatarChange = (file: File | null) => {
     setAvatarFile(file);
