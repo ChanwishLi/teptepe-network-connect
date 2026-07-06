@@ -1,26 +1,41 @@
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
-import { LogOut, Menu, X } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { LogIn, LogOut, Menu, UserPlus, X } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 import logoAsset from "@/assets/tep-tepe-logo.png.asset.json";
+import { Button } from "@/components/ui/button";
 
 export function SiteHeader() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    const read = () => {
+      try { setSignedIn(localStorage.getItem("tep-gate") === "1"); } catch { setSignedIn(false); }
+    };
+    read();
+    window.addEventListener("storage", read);
+    return () => window.removeEventListener("storage", read);
+  }, [pathname]);
 
   function signOut() {
     try { localStorage.removeItem("tep-gate"); } catch {}
-    router.navigate({ to: "/login" });
+    setSignedIn(false);
+    setOpen(false);
+    router.navigate({ to: "/" });
   }
 
   // Hide chrome inside the hidden admin area
   if (pathname.startsWith("/admin-tep2026")) return null;
 
-  const links: Array<{ to: string; label: string }> = [
-    { to: "/directory", label: "Directory" },
-    { to: "/events", label: "Events" },
-    { to: "/stories", label: "Stories" },
-  ];
+  const links: Array<{ to: string; label: string }> = signedIn
+    ? [
+        { to: "/directory", label: "Directory" },
+        { to: "/events", label: "Events" },
+        { to: "/stories", label: "Stories" },
+      ]
+    : [];
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-md">
@@ -43,14 +58,26 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <div className="hidden justify-self-end lg:flex">
-          <button
-            onClick={signOut}
-            className="inline-flex items-center gap-1.5 rounded-md border border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </button>
+        <div className="hidden justify-self-end lg:flex lg:items-center lg:gap-2">
+          {signedIn ? (
+            <button
+              type="button"
+              onClick={signOut}
+              className="inline-flex items-center gap-1.5 rounded-md border border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </button>
+          ) : (
+            <>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/login"><LogIn className="h-4 w-4" /> Sign in</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link to="/register"><UserPlus className="h-4 w-4" /> Sign up</Link>
+              </Button>
+            </>
+          )}
         </div>
         <button className="justify-self-end p-2 lg:hidden" onClick={() => setOpen((v) => !v)} aria-label="Toggle menu">
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -64,12 +91,24 @@ export function SiteHeader() {
                 {l.label}
               </Link>
             ))}
-            <button
-              onClick={() => { setOpen(false); signOut(); }}
-              className="mt-1 flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm hover:bg-muted"
-            >
-              <LogOut className="h-4 w-4" /> Sign out
-            </button>
+            {signedIn ? (
+              <button
+                type="button"
+                onClick={signOut}
+                className="mt-1 flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm hover:bg-muted"
+              >
+                <LogOut className="h-4 w-4" /> Sign out
+              </button>
+            ) : (
+              <>
+                <Link to="/login" onClick={() => setOpen(false)} className="mt-1 flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted">
+                  <LogIn className="h-4 w-4" /> Sign in
+                </Link>
+                <Link to="/register" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
+                  <UserPlus className="h-4 w-4" /> Sign up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
