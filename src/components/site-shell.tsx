@@ -1,11 +1,17 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Menu, X } from "lucide-react";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
+import { LogOut, Menu, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import logoAsset from "@/assets/tep-tepe-logo.png.asset.json";
 
 export function SiteHeader() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+
+  function signOut() {
+    try { localStorage.removeItem("tep-gate"); } catch {}
+    router.navigate({ to: "/login" });
+  }
 
   // Hide chrome inside the hidden admin area
   if (pathname.startsWith("/admin-tep2026")) return null;
@@ -37,7 +43,15 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <div className="hidden lg:block" />
+        <div className="hidden justify-self-end lg:flex">
+          <button
+            onClick={signOut}
+            className="inline-flex items-center gap-1.5 rounded-md border border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </button>
+        </div>
         <button className="justify-self-end p-2 lg:hidden" onClick={() => setOpen((v) => !v)} aria-label="Toggle menu">
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
@@ -50,6 +64,12 @@ export function SiteHeader() {
                 {l.label}
               </Link>
             ))}
+            <button
+              onClick={() => { setOpen(false); signOut(); }}
+              className="mt-1 flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm hover:bg-muted"
+            >
+              <LogOut className="h-4 w-4" /> Sign out
+            </button>
           </div>
         </div>
       )}

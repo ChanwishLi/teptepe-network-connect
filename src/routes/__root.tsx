@@ -4,8 +4,10 @@ import {
   createRootRouteWithContext,
   HeadContent,
   Scripts,
+  useRouter,
+  useRouterState,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -83,8 +85,40 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <RouteProgress />
-      <Outlet />
+      <SiteGate>
+        <Outlet />
+      </SiteGate>
       <Toaster />
     </QueryClientProvider>
   );
 }
+
+const PUBLIC_PREFIXES = ["/login", "/admin-tep2026"];
+
+function SiteGate({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isPublic = PUBLIC_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+  const [checked, setChecked] = useState(false);
+  const [allowed, setAllowed] = useState(false);
+
+  useEffect(() => {
+    if (isPublic) {
+      setChecked(true);
+      setAllowed(true);
+      return;
+    }
+    let ok = false;
+    try {
+      ok = typeof window !== "undefined" && localStorage.getItem("tep-gate") === "1";
+    } catch {}
+    setAllowed(ok);
+    setChecked(true);
+    if (!ok) router.navigate({ to: "/login" });
+  }, [pathname, isPublic, router]);
+
+  if (isPublic) return <>{children}</>;
+  if (!checked || !allowed) return null;
+  return <>{children}</>;
+}
+
