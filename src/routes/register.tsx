@@ -26,13 +26,16 @@ export const Route = createFileRoute("/register")({
 type EduEntry = { level: string; institution: string; major: string; country: string; year: string; organization: string; honors: string };
 const blankEdu = (): EduEntry => ({ level: "high_school", institution: "", major: "", country: "", year: "", organization: "", honors: "" });
 
+type JobEntry = { company: string; position: string; business_type: string; industry: string; city: string; country: string; start_year: string; end_year: string; is_current: boolean };
+const blankJob = (isCurrent = false): JobEntry => ({ company: "", position: "", business_type: "", industry: "", city: "", country: "", start_year: "", end_year: "", is_current: isCurrent });
+
 type FormState = {
   first_name: string; last_name: string; preferred_name: string; gender: string; date_of_birth: string; nationality: string;
   email: string; password: string; phone: string; address: string; city: string; province: string; country: string;
   facebook_url: string; instagram_url: string; linkedin_url: string; personal_website: string;
   student_id: string; program_type: ProgramType | ""; major: string; admission_year: string; graduation_year: string; generation: string; partner_university: string; partner_degree: string; partner_major: string; honors: string;
   professional_summary: string; skills: string; expertise: string; research_interests: string; certifications: string;
-  company: string; position: string; business_type: string; industry: string; work_city: string; work_country: string; start_year: string; end_year: string; is_current: boolean;
+  jobs: JobEntry[];
   educations: EduEntry[];
   mentor_available: boolean; mentor_hours: string; mentor_contact: string; mentor_areas: string; mentor_industry: string;
   c_data: boolean; c_directory: boolean; c_comms: boolean; c_mentor: boolean;
@@ -44,7 +47,7 @@ const initial: FormState = {
   facebook_url: "", instagram_url: "", linkedin_url: "", personal_website: "",
   student_id: "", program_type: "", major: "", admission_year: "", graduation_year: "", generation: "", partner_university: "", partner_degree: "bachelor", partner_major: "", honors: "",
   professional_summary: "", skills: "", expertise: "", research_interests: "", certifications: "",
-  company: "", position: "", business_type: "", industry: "", work_city: "", work_country: "", start_year: "", end_year: "", is_current: true,
+  jobs: [blankJob(true)],
   educations: [],
   mentor_available: false, mentor_hours: "", mentor_contact: "", mentor_areas: "", mentor_industry: "",
   c_data: false, c_directory: false, c_comms: false, c_mentor: false,
@@ -65,6 +68,9 @@ function RegisterPage() {
   const updateEdu = (i: number, patch: Partial<EduEntry>) => setF((p) => ({ ...p, educations: p.educations.map((e, idx) => idx === i ? { ...e, ...patch } : e) }));
   const addEdu = () => setF((p) => ({ ...p, educations: [...p.educations, blankEdu()] }));
   const removeEdu = (i: number) => setF((p) => ({ ...p, educations: p.educations.filter((_, idx) => idx !== i) }));
+  const updateJob = (i: number, patch: Partial<JobEntry>) => setF((p) => ({ ...p, jobs: p.jobs.map((j, idx) => idx === i ? { ...j, ...patch } : j) }));
+  const addJob = () => setF((p) => ({ ...p, jobs: [...p.jobs, blankJob(false)] }));
+  const removeJob = (i: number) => setF((p) => ({ ...p, jobs: p.jobs.filter((_, idx) => idx !== i) }));
 
   const onAvatarChange = (file: File | null) => {
     setAvatarFile(file);
@@ -81,7 +87,7 @@ function RegisterPage() {
       return true;
     }
     if (step === 4) return !!(f.professional_summary.trim() && f.skills.trim() && f.expertise.trim() && f.research_interests.trim() && f.certifications.trim());
-    if (step === 5) return !(f.company || f.position) || !!(f.company && f.position);
+    if (step === 5) return f.jobs.every((j) => (!j.company && !j.position) || (!!j.company && !!j.position));
     if (step === 7) return f.c_data && f.c_directory;
     return true;
   };
@@ -286,17 +292,30 @@ function RegisterPage() {
             {step === 5 && (
               <>
                 <h2 className="font-display text-lg font-semibold">Professional record</h2>
-                <Grid2>
-                  <Field label="Company"><Input value={f.company} onChange={(e) => set("company", e.target.value)} /></Field>
-                  <Field label="Position"><Input value={f.position} onChange={(e) => set("position", e.target.value)} /></Field>
-                  <Field label="Business type"><Input value={f.business_type} onChange={(e) => set("business_type", e.target.value)} /></Field>
-                  <Field label="Industry"><Input value={f.industry} onChange={(e) => set("industry", e.target.value)} /></Field>
-                  <Field label="City"><Input value={f.work_city} onChange={(e) => set("work_city", e.target.value)} /></Field>
-                  <Field label="Country"><Input value={f.work_country} onChange={(e) => set("work_country", e.target.value)} /></Field>
-                  <Field label="Start year"><Input type="number" value={f.start_year} onChange={(e) => set("start_year", e.target.value)} /></Field>
-                  {!f.is_current && <Field label="End year"><Input type="number" value={f.end_year} onChange={(e) => set("end_year", e.target.value)} /></Field>}
-                </Grid2>
-                <CheckRow checked={f.is_current} onChange={(v) => set("is_current", v)} label="This is my current role" />
+                <p className="text-xs text-muted-foreground">List all your jobs, most recent first. Leave empty if you have no work experience yet.</p>
+                {f.jobs.map((j, i) => (
+                  <div key={i} className="space-y-3 rounded-md border p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">Job {i + 1}</span>
+                      {f.jobs.length > 1 && (
+                        <Button type="button" size="sm" variant="ghost" onClick={() => removeJob(i)}>Remove</Button>
+                      )}
+                    </div>
+                    <Grid2>
+                      <Field label="Company"><Input value={j.company} onChange={(e) => updateJob(i, { company: e.target.value })} /></Field>
+                      <Field label="Position"><Input value={j.position} onChange={(e) => updateJob(i, { position: e.target.value })} /></Field>
+                      <Field label="Business type"><Input value={j.business_type} onChange={(e) => updateJob(i, { business_type: e.target.value })} /></Field>
+                      <Field label="Industry"><Input value={j.industry} onChange={(e) => updateJob(i, { industry: e.target.value })} /></Field>
+                      <Field label="City"><Input value={j.city} onChange={(e) => updateJob(i, { city: e.target.value })} /></Field>
+                      <Field label="Country"><Input value={j.country} onChange={(e) => updateJob(i, { country: e.target.value })} /></Field>
+                      <Field label="Start year"><Input type="number" value={j.start_year} onChange={(e) => updateJob(i, { start_year: e.target.value })} /></Field>
+                      {!j.is_current && <Field label="End year"><Input type="number" value={j.end_year} onChange={(e) => updateJob(i, { end_year: e.target.value })} /></Field>}
+                    </Grid2>
+                    <CheckRow checked={j.is_current} onChange={(v) => updateJob(i, { is_current: v })} label="This is my current role" />
+                  </div>
+                ))}
+                <Button type="button" variant="outline" size="sm" onClick={addJob}>+ Add another job</Button>
+
 
                 <h2 className="pt-4 font-display text-lg font-semibold">Additional education</h2>
                 <p className="text-xs text-muted-foreground">Add high school, additional degrees, or certifications. You can add as many as you like.</p>
