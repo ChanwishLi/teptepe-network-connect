@@ -5,7 +5,13 @@ import logoAsset from "@/assets/tep-tepe-logo.png.asset.json";
 
 export function SiteHeader() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+
+  function signOut() {
+    try { localStorage.removeItem("tep-gate"); } catch {}
+    router.navigate({ to: "/login" });
+  }
 
   // Hide chrome inside the hidden admin area
   if (pathname.startsWith("/admin-tep2026")) return null;
