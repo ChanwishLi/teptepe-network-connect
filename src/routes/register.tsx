@@ -292,17 +292,30 @@ function RegisterPage() {
             {step === 5 && (
               <>
                 <h2 className="font-display text-lg font-semibold">Professional record</h2>
-                <Grid2>
-                  <Field label="Company"><Input value={f.company} onChange={(e) => set("company", e.target.value)} /></Field>
-                  <Field label="Position"><Input value={f.position} onChange={(e) => set("position", e.target.value)} /></Field>
-                  <Field label="Business type"><Input value={f.business_type} onChange={(e) => set("business_type", e.target.value)} /></Field>
-                  <Field label="Industry"><Input value={f.industry} onChange={(e) => set("industry", e.target.value)} /></Field>
-                  <Field label="City"><Input value={f.work_city} onChange={(e) => set("work_city", e.target.value)} /></Field>
-                  <Field label="Country"><Input value={f.work_country} onChange={(e) => set("work_country", e.target.value)} /></Field>
-                  <Field label="Start year"><Input type="number" value={f.start_year} onChange={(e) => set("start_year", e.target.value)} /></Field>
-                  {!f.is_current && <Field label="End year"><Input type="number" value={f.end_year} onChange={(e) => set("end_year", e.target.value)} /></Field>}
-                </Grid2>
-                <CheckRow checked={f.is_current} onChange={(v) => set("is_current", v)} label="This is my current role" />
+                <p className="text-xs text-muted-foreground">List all your jobs, most recent first. Leave empty if you have no work experience yet.</p>
+                {f.jobs.map((j, i) => (
+                  <div key={i} className="space-y-3 rounded-md border p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">Job {i + 1}</span>
+                      {f.jobs.length > 1 && (
+                        <Button type="button" size="sm" variant="ghost" onClick={() => removeJob(i)}>Remove</Button>
+                      )}
+                    </div>
+                    <Grid2>
+                      <Field label="Company"><Input value={j.company} onChange={(e) => updateJob(i, { company: e.target.value })} /></Field>
+                      <Field label="Position"><Input value={j.position} onChange={(e) => updateJob(i, { position: e.target.value })} /></Field>
+                      <Field label="Business type"><Input value={j.business_type} onChange={(e) => updateJob(i, { business_type: e.target.value })} /></Field>
+                      <Field label="Industry"><Input value={j.industry} onChange={(e) => updateJob(i, { industry: e.target.value })} /></Field>
+                      <Field label="City"><Input value={j.city} onChange={(e) => updateJob(i, { city: e.target.value })} /></Field>
+                      <Field label="Country"><Input value={j.country} onChange={(e) => updateJob(i, { country: e.target.value })} /></Field>
+                      <Field label="Start year"><Input type="number" value={j.start_year} onChange={(e) => updateJob(i, { start_year: e.target.value })} /></Field>
+                      {!j.is_current && <Field label="End year"><Input type="number" value={j.end_year} onChange={(e) => updateJob(i, { end_year: e.target.value })} /></Field>}
+                    </Grid2>
+                    <CheckRow checked={j.is_current} onChange={(v) => updateJob(i, { is_current: v })} label="This is my current role" />
+                  </div>
+                ))}
+                <Button type="button" variant="outline" size="sm" onClick={addJob}>+ Add another job</Button>
+
 
                 <h2 className="pt-4 font-display text-lg font-semibold">Additional education</h2>
                 <p className="text-xs text-muted-foreground">Add high school, additional degrees, or certifications. You can add as many as you like.</p>
