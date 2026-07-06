@@ -93,7 +93,7 @@ function RootComponent() {
   );
 }
 
-const PUBLIC_PREFIXES = ["/login", "/register", "/admin-tep2026"];
+const PUBLIC_PREFIXES = ["/", "/login", "/register", "/admin-tep2026"];
 
 function SiteGate({ children }: { children: ReactNode }) {
   const router = useRouter();
