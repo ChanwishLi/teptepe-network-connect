@@ -1,5 +1,5 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Menu, X } from "lucide-react";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
+import { LogOut, Menu, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import logoAsset from "@/assets/tep-tepe-logo.png.asset.json";
 
