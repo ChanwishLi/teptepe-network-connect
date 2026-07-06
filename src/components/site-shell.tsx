@@ -43,7 +43,15 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <div className="hidden lg:block" />
+        <div className="hidden justify-self-end lg:flex">
+          <button
+            onClick={signOut}
+            className="inline-flex items-center gap-1.5 rounded-md border border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </button>
+        </div>
         <button className="justify-self-end p-2 lg:hidden" onClick={() => setOpen((v) => !v)} aria-label="Toggle menu">
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
