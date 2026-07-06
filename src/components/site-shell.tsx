@@ -64,6 +64,12 @@ export function SiteHeader() {
                 {l.label}
               </Link>
             ))}
+            <button
+              onClick={() => { setOpen(false); signOut(); }}
+              className="mt-1 flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm hover:bg-muted"
+            >
+              <LogOut className="h-4 w-4" /> Sign out
+            </button>
           </div>
         </div>
       )}
